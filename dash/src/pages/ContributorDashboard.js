@@ -35,6 +35,7 @@ import {
   selectCurrentUser,
   selectHasInvested,
   selectInviteToken,
+  selectSponsorshipInviteToken,
   setActiveMemberProfile,
   selectSystemWallet,
 } from "../featuers/authSlice";
@@ -60,11 +61,26 @@ const ContributorDashboard = () => {
   }, [memberDetails]);
 
   const onetimeinvitetoken = useSelector(selectInviteToken);
+  const onetimesponsorshiptoken = useSelector(selectSponsorshipInviteToken);
   const onetimeinvitelink =
     process.env.REACT_APP_FRONTEND_BASE_URL + "/accepting-oinvite?oinvite_token=" + onetimeinvitetoken;
+
+  const onetimesponsorshipinvitelink =
+    process.env.REACT_APP_FRONTEND_BASE_URL + "/accepting-oinvite?oinvite_token=" + onetimesponsorshiptoken;
+
   const handleCopyLink = () => {
     const textArea = document.createElement("textarea");
     textArea.value = onetimeinvitelink;
+
+    document.body.appendChild(textArea);
+    textArea.select();
+    document.execCommand("copy");
+    document.body.removeChild(textArea);
+    toastMessage("copied", "success");
+  };
+  const handleCopySponsorLink = () => {
+    const textArea = document.createElement("textarea");
+    textArea.value = onetimesponsorshipinvitelink;
 
     document.body.appendChild(textArea);
     textArea.select();
@@ -291,7 +307,7 @@ const ContributorDashboard = () => {
               <BlockTitle page>Home Dashboard</BlockTitle>
               <BlockDes className="text-soft" style={{ width: "100%" }}>
                 <Row>
-                  <Col md="6">
+                  <Col md="3">
                     <Alert
                       className="alert-icon"
                       color="info"
@@ -307,7 +323,7 @@ const ContributorDashboard = () => {
                       &nbsp;&nbsp;
                     </Alert>
                   </Col>
-                  <Col md="6">
+                  <Col md="4">
                     <Alert
                       className="alert-icon"
                       color="info"
@@ -326,6 +342,67 @@ const ContributorDashboard = () => {
                         <span>Copy Account Number </span>
                       </Button>
                       &nbsp;&nbsp;
+                    </Alert>
+                  </Col>
+                  <Col md="5">
+                    <Alert
+                      className="alert-icon"
+                      color="info"
+                      style={{ width: "100%", height: "210px", marginTop: "20px" }}
+                    >
+                      <Icon name="alert-circle" />
+                      <h3>Invite Links </h3>
+                      <table style={{ width: "100%" }}>
+                        <tbody>
+                          <tr>
+                            <td>Sponsorship Link</td>
+                            <td>
+                              <Button
+                                style={{ width: "100%" }}
+                                color="primary"
+                                outline
+                                className="btn-dim btn-white  "
+                                onClick={handleCopySponsorLink}
+                              >
+                                <Icon name="user-add-fill"></Icon>
+                                <span>Copy Sponsored Link </span>
+                              </Button>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td>Invite Link</td>
+                            <td>
+                              <Button
+                                color="primary"
+                                style={{ width: "100%", marginTop: "5px" }}
+                                outline
+                                className="btn-dim btn-white  "
+                                onClick={handleCopyLink}
+                              >
+                                <Icon name="user-add-fill"></Icon>
+                                <span>Copy Link </span>
+                              </Button>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td>Invite</td>
+                            <td>
+                              <Button
+                                style={{ width: "100%", marginTop: "5px" }}
+                                color="primary"
+                                outline
+                                className="btn-dim btn-white  "
+                                onClick={toggleForm}
+                                onContextMenu={handleContextMenu}
+                                onMouseDown={handleMouseDown}
+                              >
+                                <Icon name="user-add-fill"></Icon>
+                                <span>Invite User </span>
+                              </Button>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
                     </Alert>
                   </Col>
                 </Row>
@@ -690,22 +767,8 @@ const ContributorDashboard = () => {
                       >
                         {hasinvested == 1 && (
                           <span>
-                            <Button color="primary" outline className="btn-dim btn-white  " onClick={handleCopyLink}>
-                              <Icon name="user-add-fill"></Icon>
-                              <span>Copy Link </span>
-                            </Button>
+                            <br></br>
                             &nbsp;&nbsp;
-                            <Button
-                              color="primary"
-                              outline
-                              className="btn-dim btn-white  "
-                              onClick={toggleForm}
-                              onContextMenu={handleContextMenu}
-                              onMouseDown={handleMouseDown}
-                            >
-                              <Icon name="user-add-fill"></Icon>
-                              <span>Invite User </span>
-                            </Button>
                           </span>
                         )}
                         {hasinvested == 0 && (
@@ -726,6 +789,7 @@ const ContributorDashboard = () => {
                           <th scope="col">Invite Name</th>
                           <th scope="col">Invite Phone</th>
                           <th scope="col">Invite Email</th>
+                          <th scope="col">Reg Type</th>
                           <th scope="col">Status</th>
                         </tr>
                       </thead>
@@ -733,11 +797,28 @@ const ContributorDashboard = () => {
                         {allinvites != undefined &&
                           allinvites.length > 0 &&
                           allinvites.map((invite, key) => {
+                            let is_sponsored = 0;
+                            if (invite?.one_time_invite_record?.length > 0) {
+                              if (invite?.one_time_invite_record?.is_sponsored === 1) {
+                                is_sponsored = 1;
+                              } else {
+                                is_sponsored = 0;
+                              }
+                            } else {
+                              is_sponsored = 0;
+                            }
                             return (
                               <tr key={key}>
                                 <td>{invite.invite_name}</td>
                                 <td>{invite.invite_phone}</td>
                                 <td>{invite.invite_email}</td>
+                                <td>
+                                  {is_sponsored === 0 ? (
+                                    <Badge color="info">Non Sponsored</Badge>
+                                  ) : (
+                                    <Badge color="info">Sponsored</Badge>
+                                  )}
+                                </td>
                                 <td>
                                   {invite.completed == 0 ? (
                                     <Badge color="warning">Not Completed</Badge>

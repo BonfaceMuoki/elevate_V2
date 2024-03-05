@@ -7,10 +7,30 @@ import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { useLoginMutation } from "../api/auth/authApiSlice";
-import { setCredentials, setHasInvested, setInviteToken, setMainRole, setSystemWallet, setUserWallet, selectCurrentToken, logOut, selectMainRole } from "../featuers/authSlice";
+import {
+  setCredentials,
+  setHasInvested,
+  setInviteToken,
+  setSponsorshipInviteToken,
+  setMainRole,
+  setSystemWallet,
+  setUserWallet,
+  selectCurrentToken,
+  logOut,
+  selectMainRole,
+} from "../featuers/authSlice";
 import ReCAPTCHA from "react-google-recaptcha";
 
-import { Block, BlockContent, BlockDes, BlockHead, BlockTitle, Button, Icon, PreviewCard } from "../components/Component";
+import {
+  Block,
+  BlockContent,
+  BlockDes,
+  BlockHead,
+  BlockTitle,
+  Button,
+  Icon,
+  PreviewCard,
+} from "../components/Component";
 import Head from "../layout/head/Head";
 
 import AuthFooter from "../pages/auth/AuthFooter";
@@ -22,9 +42,8 @@ const Login = () => {
   const dispatch = useDispatch();
   const navigateto = useNavigate();
 
-
   const [passState, setPassState] = useState(false);
-  const toastMessage = (message, type) => { };
+  const toastMessage = (message, type) => {};
   const SITE_KEY = process.env.REACT_APP_reCAPTCHA_SITE_KEY;
   const SECRET_KEY = process.env.REACT_APP_reCAPTCHA_SECRET_KEY;
   const captchaRef = useRef(null);
@@ -46,7 +65,6 @@ const Login = () => {
   const [login, { isLoading }] = useLoginMutation();
   const navigate = useNavigate();
   const submitLoginForm = async (data) => {
-
     if (currentToe !== null) {
       Swal.fire({
         title: "Already Signed In",
@@ -55,14 +73,12 @@ const Login = () => {
         showCancelButton: true,
         confirmButtonText: "Login Afresh with this!",
       }).then((result) => {
-
         if (result.isConfirmed) {
           dispatch(logOut());
           currentToe = null;
           currentrole = null;
           proceedtologin(data);
         } else {
-
           if (currentrole.name === "Super Admin") {
             navigateto("/admin-dashboard");
           } else if (currentrole.name === "Contributor") {
@@ -77,7 +93,6 @@ const Login = () => {
     }
     // setOpen(true);
     // setOpen(false);
-
   };
   const proceedtologin = async (data) => {
     let formData = new FormData();
@@ -87,7 +102,6 @@ const Login = () => {
     const userData = await login({ email, password, recaptcha_token });
     console.log(userData);
     if ("error" in userData) {
-
       console.log(userData.error.data.error);
       toastMessage(userData.error.data.error, "error");
       if (userData.error.data.message) {
@@ -95,22 +109,21 @@ const Login = () => {
           icon: "error",
           title: "Oops...",
           text: userData.error.data.message,
-          focusConfirm: false
+          focusConfirm: false,
         });
       } else if (userData.error.data.error) {
         Swal.fire({
           icon: "error",
           title: "Oops...",
           text: userData.error.data.error,
-          focusConfirm: false
+          focusConfirm: false,
         });
       }
-
-
     } else {
       dispatch(setCredentials({ ...userData.data, email }));
       dispatch(setHasInvested(userData.data.user.investment_done));
       dispatch(setInviteToken(userData.data.invite_token));
+      dispatch(setSponsorshipInviteToken(userData.data.sponsorship_token));
       dispatch(setMainRole(userData.data.role));
       dispatch(setSystemWallet(userData.data.syswallet));
       dispatch(setUserWallet(userData.data.userwallet));
@@ -122,7 +135,7 @@ const Login = () => {
         navigateto("/supplier-dashboard");
       }
     }
-  }
+  };
 
   return (
     <>
@@ -211,7 +224,6 @@ const Login = () => {
             <Link to="/register"> Register an Account</Link>
           </div>
         </PreviewCard>
-
       </Block>
       <AuthFooter />
     </>
