@@ -45,7 +45,6 @@ Route::group([
     Route::get('/get-all-tiers', [CommonController::class, 'getAllTiers']);
     Route::get('/get-all-products', [CommonController::class, 'getAllProducts']);
     Route::get('/get-all-ordered-products', [CommonController::class, 'getAllOrderedProducts']);
-
     Route::get('/get-all-links', [CommonController::class, 'getAllSubLinks']);
     Route::get('/get-user-sub-links', [CommonController::class, 'getAllUserSubLinks']);
     Route::post('/save-user-subscription-link', [CommonController::class, 'saveUserRegistrationLink']);
@@ -55,7 +54,6 @@ Route::group([
     Route::get('/get-tier-contribution-details', [AdminController::class, 'getTierContributionDetails']);
     Route::post('/update-personal-information', [CommonController::class, 'updatePersonalInformation']);
     Route::post('/save-cart', [CommonController::class, 'saveCart']);
-
     Route::get('/get-orders', [CommonController::class, 'getOrders']);
 
 });
@@ -67,7 +65,6 @@ Route::group([
     Route::get('/get-my-investments', [ContributorController::class, 'getMyInvestments']);
     Route::get('/get-my-invites', [ContributorController::class, 'getMyInvites']);
     Route::get('/get-my-dashboard', [ContributorController::class, 'getMyDashboard']);
-
     Route::get('/get-my-profile-data', [ContributorController::class, 'getMyProfileData']);
 
 });
@@ -77,6 +74,7 @@ Route::group([
     'prefix' => 'admin',
 ], function ($router) {
     
+    Route::post('/sync-sponsorship-links', [AdminController::class, 'syncsponsorship']);
     Route::get('/get-sponsorship-links', [AdminController::class, 'getSponsorshipLinks']);
     Route::post('/add-role', [AdminController::class, 'addRoles']);
     Route::patch('/update-role/{id}', [AdminController::class, 'updateRole']);

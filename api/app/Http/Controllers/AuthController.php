@@ -20,6 +20,12 @@ use Mail;
 use Mockery\Exception;
 use Validator;
 
+use App\Models\BonusPayment;
+use App\Models\CompanyReceivedPayment;
+use App\Models\Contribution;
+use App\Models\MasterPayment;
+use App\Models\MatrixOption;
+
 class AuthController extends Controller
 {
 
@@ -142,6 +148,7 @@ class AuthController extends Controller
     public function SendAccountPasswordResetLink(Request $request)
     {
 
+
         $validator = Validator::make($request->all(), [
             'email' => 'required|email',
             'recaptcha_token' => 'required',
@@ -259,10 +266,11 @@ class AuthController extends Controller
                 } else if ($request->is_invite == 1 && $request->invite_type == "nonspecificlink") {
                     //update details
                     $oinvite = UserIniviteOneTimeLink::findOrFail($request->invite);
-                    $oinvite->invite_count += 1;
-                    //  throw new Exception($user->id."Value is greater than ".json_encode($invite));
-                    $oinvite->save();
 
+                    
+                    $oinvite->invite_count += 1;
+                    //throw new Exception($user->id."Value is greater than ".json_encode($invite));
+                    $oinvite->save();
                     //update details
                     //save invite
                     $objectosave['invited_by'] = $oinvite->user_id;
@@ -273,13 +281,24 @@ class AuthController extends Controller
                     $objectosave['invite_phone'] = $request->phone_number;
                     $objectosave['completed_user_id'] = $user->id;
                     $objectosave['completion_user_id'] = $user->id;
-
                     $objectosave['completed_on'] = Carbon::now();
                     $objectosave['completed'] = 1;
                     $created_inviteentry = SystemUserInvite::create($objectosave);
                     $user->isAdminInvite = $created_inviteentry->id;
-                    $user->save();
+                    
                     //save invite
+                    if($oinvite->is_sponsorship==1){
+                        //check if inviving user has the money
+
+                       $resultsponsor= $this->processSponsoredRegistration($oinvite);
+                        return ['code'=>1,'sponsorrecord'=>$resultsponsor,'Invite_details'=>$oinvite];
+                        //check if inviting user has the money
+                        
+                        $user->is_sponsored=1;
+                        $user->sponsorship_fee_paid=0;
+                    }
+
+                    $user->save();
 
                 }
 
@@ -316,7 +335,7 @@ class AuthController extends Controller
                 $superadmin_role = Role::where('slug', 'super admin')->first();
                 $user->roles()->attach($superadmin_role);
             }
-            DB::commit();
+          //  DB::commit();
             return response()->json([
                 'message' => 'Account has been created successfully. Please Login to continue',
                 'register_as' => $request->post('register_as'),
@@ -475,10 +494,10 @@ class AuthController extends Controller
         }
 
     }
-    public function getMyInviteToken($user)
+    public function getMyInviteToken($user,$sponsorship)
     {
 
-        $invite = UserIniviteOneTimeLink::where("user_id", $user)->first();
+        $invite = UserIniviteOneTimeLink::where("user_id", $user)->where("is_sponsorship",$sponsorship)->first();
         if ($invite != null) {
             return $invite->invite_token;
         } else {
@@ -502,7 +521,8 @@ class AuthController extends Controller
         return response()->json([
             'message' => 'Logged in successfully. Welcome to ' . env("APP_NAME"),
             'access_token' => $token,
-            'invite_token' => $this->getMyInviteToken($userid),
+            'invite_token' => $this->getMyInviteToken($userid,0),
+            'sponsorship_token' => $this->getMyInviteToken($userid,1),
             'token_type' => 'bearer',
             'expires_in' => auth()->factory()->getTTL() * 60,
             'user' => array_merge($user->toArray(), $role->toArray(), $userid),
@@ -540,7 +560,7 @@ class AuthController extends Controller
     {
         $objecttosave['user_id'] = $user->id;
         $objecttosave['invite_token'] = $this->generateOneTimeInviteToken($user);
-        $objecttosave['user_id'] = $user->id;
+        $objecttosave['is_sponsorship'] = 1;
         UserIniviteOneTimeLink::create($objecttosave);
         return true;
     }
@@ -552,5 +572,96 @@ class AuthController extends Controller
         } while (UserIniviteOneTimeLink::where("invite_token", "=", $randostring)->first());
         return $randostring;
     }
+
+    public function invest($user,$amount)
+    {  
+
+        try {
+            DB::beginTransaction();
+            //get the tier details
+            $matoptions=MatrixOption::where("tier_name","Tier 1")->first();
+            //get the tier details
+            //upload payment Proof
+            $countcontrionsavailable = Contribution::where('user_id', auth()->user()->id)->count();
+            if ($countcontrionsavailable == 0) {
+                //save payment
+                $savepayment['user_id'] = auth()->user()->id;
+                $savepayment['description'] = 'Intial payment of ' . $request->amount;
+                $savepayment['payment_proof'] = $paymentprooffile;
+                $savepayment['amount_paid'] = $request->amount;
+                $masterpayment = MasterPayment::create($savepayment);
+                //save payment
+                //send to company account
+                $companypaymentob['amount_paid'] = ($request->amount) - 40;
+                $companypaymentob['paid_by'] = auth()->user()->id;
+                $companypaymentob['paid_as'] = 'Initial Investment';
+                $companypaymentob['payment_id'] = $masterpayment->id;
+                $companypayment = CompanyReceivedPayment::create($companypaymentob);
+                //send to company account
+                //send to matrix
+                $tier1 = MatrixOption::where('club', 1)->where('tier_name', 'Tier 1')->first();
+                $matrixcontribution['user_id'] = auth()->user()->id;
+                $matrixcontribution['tier_id'] = $tier1->id;
+                $matrixcontribution['payback_paid_total'] = 0;
+                $matrixcontribution['contribution_amount'] = ($request->amount) - 20;
+                $matrixcontribution['payment_id'] = $masterpayment->id;
+                $contribution = Contribution::create($matrixcontribution);
+                //send to matrix
+                //send to bonus
+                if (auth()->user()->isAdminInvite == 1) {
+                    $companypaymentbob['amount_paid'] = ($request->amount) - 40;
+                    $companypaymentbob['paid_by'] = auth()->user()->id;
+                    $companypaymentbob['paid_as'] = 'Joining Bonus';
+                    $companypaymentbob['payment_method'] = 'Unspecified';
+                    $companypaymentbob['payment_id'] = $masterpayment->id;
+                    $companypayment = CompanyReceivedPayment::create($companypaymentbob);
+                } else {
+
+                    $bonusp['amount_paid'] = ($request->amount) - 40;
+                    $bonusp['paid_by'] = auth()->user()->id;
+                    $bonusp['bonus_for'] = 'Joining Bonus';
+                    $bonusp['payment_id'] = $masterpayment->id;
+                    $bonusp = BonusPayment::create($bonusp);
+
+                }
+                //send to bonus
+                //update investment status
+
+            } else {
+                return response()->json([
+                    'message' => 'You have already paid your membership fee.',
+                ], 201);
+            }
+
+            // upload Payment Proof
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Membership fee payment Made successfully. You will get an email notification once your payment has been verified.Please note that approval might take upto 24hrs.',
+            ], 201);
+
+        } catch (\Exception $exp) {
+            DB::rollBack();
+
+            return response()->json([
+                'message' => 'Request has not been successfully processed.' . $exp->getMessage(),
+
+            ], 400);
+
+        }
+    }
+    public function processSponsoredRegistration($invitedetails){
+       $whoinvited=$invitedetails->user_id;
+       $eligible=  Contribution::where("user_id",$whoinvited)->where("tier_id",2)
+      //->lockForUpdate()
+       ->whereRaw('(CEIL((payback_paid_total - (subscription_total_used+sponsorship_total_used)) )) <> 0')->first();
+       if($eligible!=null){
+           return $eligible;
+       }else{
+           return $eligible;   
+        }
+
+    }
+
 
 }

@@ -19,6 +19,7 @@ use App\Models\SystemSetting;
 use App\Models\TierEarning;
 use App\Models\User;
 use App\Models\UserIniviteOneTimeLink;
+use App\Services\ContributionService;
 use App\Services\SubscriptionLinksService;
 use App\Services\SupplierService;
 use Carbon\Carbon;
@@ -36,14 +37,30 @@ class AdminController extends Controller
     protected $supplierservice;
 
     protected $subscriptionlinkservice;
+    protected $contributionservice;
 
-    public function __construct(SupplierService $supplierservice, SubscriptionLinksService $subscriptionlinkservice)
+    public function __construct(SupplierService $supplierservice, SubscriptionLinksService $subscriptionlinkservice,ContributionService $contributionservice)
     {
         $this->supplierservice = $supplierservice;
         $this->subscriptionlinkservice = $subscriptionlinkservice;
-        $this->middleware('auth:api')->except(['download']);
+        $this->contributionservice=$contributionservice;
+        $this->middleware('auth:api')->except(['download','syncsponsorship']);
         $this->middleware('Admin')->except(['getAllRoles', 'download']);
     }
+    public function syncsponsorship(){
+        User::cursor()->each(function ($user) {          
+            $objecttosave['user_id'] = $user->id;
+            $objecttosave['is_sponsorship'] = 1;    
+          
+            if(!UserIniviteOneTimeLink::where($objecttosave)->exists()){
+                $objecttosave['invite_token'] = $this->generateOneTimeInviteToken($user);
+                UserIniviteOneTimeLink::create($objecttosave);
+            }
+           
+        });
+        
+    }
+ 
     public function getSponsorshipLinks(){
 
       $sponsors= Contribution::where("tier_id",2)
@@ -417,58 +434,8 @@ class AdminController extends Controller
     }
     public function verifyPayment(Request $request)
     {
-        try {
-
-            DB::beginTransaction();
-            $response = '';
-            $payment = $request->payment;
-            $payment_arr = json_decode($payment, true);
-            $masterPaymentid = ($payment_arr['id']) ? $payment_arr['id'] : '';
-            $contributions = $payment_arr['matrix_payments'];
-            $bonuses = $payment_arr['bonuses'];
-            $masterpay = MasterPayment::findOrFail($masterPaymentid);
-
-            if ($masterpay) {
-
-                $userupdateee = User::where('id', $masterpay->user_id)->first();
-                $userupdateee->investment_done = 1;
-                $userupdateee->save();
-
-                if ($masterpay->status == "APPROVED") {
-                    return response()->json(['message' => "Payment already approved"], 201);
-                }
-                $masterpay->status = ($request->action == 1) ? 'APPROVED' : 'REJECTED';
-                $masterpay->save();
-                if (($request->action == 1) && $masterpay->save()) {
-                    //close update contributions
-                    //update bonuses
-                    BonusPayment::where('payment_id', $masterPaymentid)->update(['status' => 'Approved']);
-                    //update bonuses
-                    //update company payments
-                    CompanyReceivedPayment::where('payment_id', $masterPaymentid)->update(['status' => 'Approved']);
-                    //update company payments
-                    //update contributions
-                    Contribution::where('payment_id', $masterPaymentid)->update(['admin_approved' => 'Approved']);
-                    foreach ($contributions as $contribution) {
-                        $contributiontoup = Contribution::findOrFail($contribution['id']);
-                        $contributiontoup->admin_approved = 'Approved';
-                        if ($contributiontoup) {
-                            $response = $this->progressToNextTier($contributiontoup);
-                        }
-                    }
-                } else {
-                }
-                $userpaying = User::where("id", $masterpay->user_id)->first();
-                //    $mailsend = Mail::to($userpaying->email)->send(new sendReportApprovalMail());
-                DB::commit();
-            } else {
-            }
-
-            return response()->json(['message' => $response, 'data' => $payment_arr['id']], 201);
-        } catch (Exception $ex) {
-            DB::rollBack();
-            return response()->json(['message' => 'Verification failed.Please contact Admin.' . $ex->getMessage()], 400);
-        }
+       $reposnse= $this->contributionservice->verifyPayment($request); 
+       return $reposnse;
     }
 
     public function autoVerifyPayment($payment, $action)

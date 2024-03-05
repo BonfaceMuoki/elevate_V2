@@ -22,7 +22,8 @@ class Contribution extends Model
     ];
     // protected $append=['pay_back_entry'];
     protected $appends = [
-        'pay_back_entries'
+        'pay_back_entries',
+        'sponsored_registrations'
     ];
     
     public function contributionTier(){
@@ -40,5 +41,14 @@ class Contribution extends Model
             ->where("contribution_paybacks.contribution_id_reciving_payback", $this->id)
             ->select("contributions.*","contribution_paybacks.*","users.full_name")->get();        
         return $paybacks;
+    }
+    public function getSponsoredRegistrationsAttribute(){
+       $connections =  DB::table("contributions")
+       ->join("system_user_invites","system_user_invites.invited_by","=","contributions.user_id")
+       ->join("users","users.id","=","system_user_invites.completed_user_id")
+       ->where("contributions.tier_id",2)      
+       ->get();
+       return $connections;
+
     }
 }
