@@ -24,7 +24,6 @@ import { toast } from "react-toastify";
 import Swal from "sweetalert2";
 
 const CloseButton = () => {
-
   return (
     <span className="btn-trigger toast-close-button" role="button">
       <Icon name="cross"></Icon>
@@ -140,7 +139,7 @@ const AcceptInvite = () => {
         icon: "error",
         title: "Oops...",
         text: result.error.data.message,
-        focusConfirm: false
+        focusConfirm: false,
       });
     } else {
       Swal.fire({
@@ -233,7 +232,7 @@ const AcceptInvite = () => {
                 <div className="form-group">
                   <div className="form-label-group">
                     <label className="form-label" htmlFor="default-01">
-                      Contact Phone Number
+                      Contact Phone Number tttyty
                     </label>
                   </div>
                   <div className="form-control-wrap">
@@ -269,8 +268,9 @@ const AcceptInvite = () => {
                             ev.preventDefault();
                             setPassState(!passState);
                           }}
-                          className={`form-icon lg form-icon-right passcode-switch ${passState ? "is-hidden" : "is-shown"
-                            }`}
+                          className={`form-icon lg form-icon-right passcode-switch ${
+                            passState ? "is-hidden" : "is-shown"
+                          }`}
                         >
                           <Icon name="eye" className="passcode-icon icon-show"></Icon>
                           <Icon name="eye-off" className="passcode-icon icon-hide"></Icon>
@@ -299,8 +299,9 @@ const AcceptInvite = () => {
                       <div className="form-control-wrap">
                         <a
                           href="#password"
-                          className={`form-icon lg form-icon-right passcode-switch ${passState ? "is-hidden" : "is-shown"
-                            }`}
+                          className={`form-icon lg form-icon-right passcode-switch ${
+                            passState ? "is-hidden" : "is-shown"
+                          }`}
                         ></a>
                         <input
                           type={passState ? "text" : "password"}
@@ -323,12 +324,11 @@ const AcceptInvite = () => {
                   <ReCAPTCHA className="recaptcha" sitekey={SITE_KEY} ref={captchaRef} />
                 </div>
                 <div className="form-group">
-                  {
-                    (!submittingInfor) &&
+                  {!submittingInfor && (
                     <Button size="lg" className="btn-block" type="submit" color="primary">
                       Submit
                     </Button>
-                  }
+                  )}
                 </div>
               </form>
 

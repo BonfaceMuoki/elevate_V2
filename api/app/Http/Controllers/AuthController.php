@@ -25,16 +25,17 @@ use App\Models\CompanyReceivedPayment;
 use App\Models\Contribution;
 use App\Models\MasterPayment;
 use App\Models\MatrixOption;
+use App\Services\ContributionService;
 
 class AuthController extends Controller
 {
-
+    protected $contributionservice;
     /**
      * Create a new AuthController instance.
      *
      * @return void
      */
-    public function __construct()
+    public function __construct(ContributionService $contributionservice)
     {
         $this->middleware('auth:api', [
             'except' => [
@@ -48,6 +49,7 @@ class AuthController extends Controller
                 'ResetPassword',
             ],
         ]);
+        $this->contributionservice=$contributionservice;
     }
     public function VarifyRecaptchaToken($request)
     {
@@ -231,6 +233,7 @@ class AuthController extends Controller
         if ($validator->fails()) {
             return response()->json(["message" => "Unprocessable data", "backendvalerrors" => $validator->errors()], 400);
         }
+        $response_investsponsored=null;
         $user = [];
         try {
             // $response = $this->VarifyRecaptchaToken($request);
@@ -290,15 +293,26 @@ class AuthController extends Controller
                     if($oinvite->is_sponsorship==1){
                         //check if inviving user has the money
 
-                       $resultsponsor= $this->processSponsoredRegistration($oinvite);
-                        return ['code'=>1,'sponsorrecord'=>$resultsponsor,'Invite_details'=>$oinvite];
-                        //check if inviting user has the money
-                        
+                       $resultsponsor= $this->processSponsoredRegistration($oinvite);                    
+                        // return ['code'=>1,'sponsorrecord'=>$resultsponsor,'Invite_details'=>$oinvite];
+                        //check if inviting user has the money                        
                         $user->is_sponsored=1;
                         $user->sponsorship_fee_paid=0;
+                        if($resultsponsor!=null){
+                          $user->save();
+                          $created_user=$user;
+                        $response_investsponsored=$this->contributionservice->investForSponsored( $created_user,$oinvite);
+                        }else{
+
+                            $user->save();
+
+                        }
+
+                    }else{
+                        $user->save();
                     }
 
-                    $user->save();
+                  
 
                 }
 
@@ -335,11 +349,12 @@ class AuthController extends Controller
                 $superadmin_role = Role::where('slug', 'super admin')->first();
                 $user->roles()->attach($superadmin_role);
             }
-          //  DB::commit();
+             DB::commit();
             return response()->json([
                 'message' => 'Account has been created successfully. Please Login to continue',
                 'register_as' => $request->post('register_as'),
                 'user' => $user,
+                'sponsored'=>$response_investsponsored,
                 'roles' => ($user) ? $user->roles()->get() : "No account was created",
             ], 201);
             // }else{
@@ -654,7 +669,7 @@ class AuthController extends Controller
        $whoinvited=$invitedetails->user_id;
        $eligible=  Contribution::where("user_id",$whoinvited)->where("tier_id",2)
       //->lockForUpdate()
-       ->whereRaw('(CEIL((payback_paid_total - (subscription_total_used+sponsorship_total_used)) )) <> 0')->first();
+       ->whereRaw('((payback_paid_total - (subscription_total_used+sponsorship_total_used))) <> 0')->first();
        if($eligible!=null){
            return $eligible;
        }else{

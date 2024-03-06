@@ -18,7 +18,9 @@ class Contribution extends Model
         'admin_approved',
         'status',
         'contribution_amount',
-        'payment_id'
+        'payment_id',
+        'sponsorship_total_used',
+        'subscription_total_used'
     ];
     // protected $append=['pay_back_entry'];
     protected $appends = [
