@@ -592,6 +592,7 @@ class AuthController extends Controller
     {
         $objecttosave['user_id'] = $user->id;
         $objecttosave['invite_token'] = $this->generateOneTimeInviteToken($user);
+        $objecttosave['is_sponsorship'] = 0;
         UserIniviteOneTimeLink::create($objecttosave);
         return true;
     }
