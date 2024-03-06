@@ -18,6 +18,7 @@ use DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Validator;
+use App\Models\UserIniviteOneTimeLink;
 
 class CommonController extends Controller
 {
@@ -257,5 +258,19 @@ class CommonController extends Controller
         $orders = Order::with("orderProducts", "owner");
         $ords = $orders->paginate($request->no_records);
         return response()->json($ords);
+    }
+    public function getRefreshSponsoredLink(Request $request){
+                     $user=Auth()->user()->id;
+                     $found= Contribution::where("user_id", $user)
+                     ->where("tier_id", 2)
+                     ->whereRaw('(payback_paid_total - (150 + sponsorship_total_used + 60)) >= 50')
+                     ->select("*", DB::raw("(payback_paid_total - (150 + sponsorship_total_used + 60)) >= 50 as foundrecord"))
+                     ->first();
+                     if($found==null){
+                        return ['status'=>0,'token'=>''];
+                     }else{
+                        $invite = UserIniviteOneTimeLink::where("user_id", $user)->where("is_sponsorship",1)->first();
+                        return ['status'=>1,'token'=>$invite->invite_token,'user'=>$user,'foundrecord'=>$found];                       
+                     }
     }
 }

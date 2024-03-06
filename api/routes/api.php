@@ -42,6 +42,7 @@ Route::group([
     'prefix' => 'commons',
 ], function ($router) {
     Route::get('/get-all-categories', [CommonController::class, 'getAllCategories']);
+    Route::get('/get-refresh-sponsored-link', [CommonController::class, 'getRefreshSponsoredLink']);
     Route::get('/get-all-tiers', [CommonController::class, 'getAllTiers']);
     Route::get('/get-all-products', [CommonController::class, 'getAllProducts']);
     Route::get('/get-all-ordered-products', [CommonController::class, 'getAllOrderedProducts']);

@@ -341,11 +341,6 @@ const AcceptOInvite = () => {
               <div className="form-note-s2 text-center pt-1">
                 <Link to="/register"> Register a Direct Account</Link>
               </div>
-              {/* <div className="text-center pt-1 pb-1">
-        <h6 className="overline-title overline-title-sap">
-          <span>OR</span>
-        </h6>
-      </div> */}
             </PreviewCard>
           </Block>
           <AuthFooter />

@@ -185,12 +185,7 @@ class AuthController extends Controller
                         return response()->json(['message' => "Failed.Please contact admin"], 422);
                     }
                     // Proceed with your desired logic
-                    // } else {
-                    //     $statusCode = $response->status();
-                    //     return response()->json(['message' => "Failed . Resubmit your request again.", 'recaptha_response' => $data, 'se' => env('GOOGLE_SECRET_KEY')], 422);
-                    //     // reCAPTCHA validation failed
-                    // Handle the validation failure
-                    // }
+                 
                 } else {
 
                     // Request to Google reCAPTCHA API failed
@@ -303,10 +298,24 @@ class AuthController extends Controller
                           $created_user=$user;
                           $response_investsponsored=$this->contributionservice->investForSponsored( $created_user,$oinvite);
                         }else{
-                          
-                            return response()->json([
-                                'message' => 'Account has not been created successfully. This user cannot sponsor more people .',
-                            ], 400);
+                          $usercontribution = Contribution::where("user_id",$oinvite->user_id)->where("tier_id",2)->first();
+                            if($usercontribution!=null){
+                                if($usercontribution->sponsorship_total_used < 600){
+                                    return response()->json([
+                                        'message' => 'Account has not been created successfully. This user cannot sponsor anyone currently.Please try again later .',
+                                    ], 400);
+                                  }else if($usercontribution->sponsorship_total_used === 600){
+                                    return response()->json([
+                                        'message' => 'Account has not been created successfully. This user cannot sponsor more people .',
+                                    ], 400);
+                                  } 
+                            }else{
+                                return response()->json([
+                                    'message' => 'Account has not been created successfully. This user has not qualified to sponsor any one .',
+                                ], 400);
+                            }
+                         
+
 
                         }
 
@@ -516,7 +525,20 @@ class AuthController extends Controller
 
         $invite = UserIniviteOneTimeLink::where("user_id", $user)->where("is_sponsorship",$sponsorship)->first();
         if ($invite != null) {
-            return $invite->invite_token;
+            if($sponsorship===1){
+                //validate 
+              $found=  Contribution::where("user_id",$user)->where("tier_id",2)    
+                     ->whereRaw('((payback_paid_total - (150+sponsorship_total_used+60))) <> 0')->first();
+                     if($found!=null){
+                        return $invite->invite_token;
+                     }else{
+                        return null;
+                     }
+                //validate
+            }else{
+                return $invite->invite_token;
+            }
+            
         } else {
             return "";
         }

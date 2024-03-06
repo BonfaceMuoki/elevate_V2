@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import Content from "../layout/content/Content";
 import Head from "../layout/head/Head";
 import { Card, CardHeader, CardFooter, CardBody, CardTitle } from "reactstrap";
-import { useGetAllTiersQuery } from "../api/commonEndPointsAPI";
+import { useGetAllTiersQuery, useGetRefreshedSponsoredTokenQuery } from "../api/commonEndPointsAPI";
 import {
   Block,
   BlockDes,
@@ -38,6 +38,7 @@ import {
   selectSponsorshipInviteToken,
   setActiveMemberProfile,
   selectSystemWallet,
+  setSponsorshipInviteToken,
 } from "../featuers/authSlice";
 import { useGetMyProfileDataQuery } from "../api/contributor/investmentEndPoints";
 import Swal from "sweetalert2";
@@ -55,13 +56,31 @@ const ContributorDashboard = () => {
   const logged = useSelector(selectCurrentUser);
   const walletforadmin = useSelector(selectSystemWallet);
   const { data: memberDetails, isLoading: loadingUserDetails } = useGetMyProfileDataQuery(logged?.user_id);
+  let onetimesponsorshiptoken = useSelector(selectSponsorshipInviteToken);
+  const {
+    data: refreshedSponsorToken,
+    isLoading: loadingSponsorshipToken,
+    refetch: refetchSponsorshipToken,
+  } = useGetRefreshedSponsoredTokenQuery();
+
+  if (refreshedSponsorToken?.status === 1) {
+    if (onetimesponsorshiptoken !== refreshedSponsorToken?.token && refreshedSponsorToken?.token !== undefined) {
+      onetimesponsorshiptoken = refreshedSponsorToken?.token;
+    } else {
+      console.log(refreshedSponsorToken, onetimesponsorshiptoken);
+      console.log(refreshedSponsorToken, "refreshedSponsorToken");
+    }
+  } else {
+    onetimesponsorshiptoken = null;
+  }
+
   // console.log(memberDetails, "memberDetails");
   useEffect(() => {
     dispatch(setActiveMemberProfile(memberDetails));
   }, [memberDetails]);
 
   const onetimeinvitetoken = useSelector(selectInviteToken);
-  const onetimesponsorshiptoken = useSelector(selectSponsorshipInviteToken);
+
   const onetimeinvitelink =
     process.env.REACT_APP_FRONTEND_BASE_URL + "/accepting-oinvite?oinvite_token=" + onetimeinvitetoken;
 
@@ -297,6 +316,10 @@ const ContributorDashboard = () => {
       e.preventDefault();
     }
   };
+  const handleRefreshSponsorToke = (e) => {
+    refetchSponsorshipToken();
+  };
+
   return (
     <>
       <Head title="Invest Dashboard" />
@@ -351,24 +374,48 @@ const ContributorDashboard = () => {
                       style={{ width: "100%", height: "210px", marginTop: "20px" }}
                     >
                       <Icon name="alert-circle" />
-                      <h3>Invite Links </h3>
+                      <p>You can use the following links to invite people and earn a Bonus. </p>
                       <table style={{ width: "100%" }}>
                         <tbody>
-                          <tr>
-                            <td>Sponsorship Link</td>
-                            <td>
-                              <Button
-                                style={{ width: "100%" }}
-                                color="primary"
-                                outline
-                                className="btn-dim btn-white  "
-                                onClick={handleCopySponsorLink}
-                              >
-                                <Icon name="user-add-fill"></Icon>
-                                <span>Copy Sponsored Link </span>
-                              </Button>
-                            </td>
-                          </tr>
+                          {onetimesponsorshiptoken !== null ? (
+                            <tr>
+                              <td>Sponsorship Link</td>
+                              <td>
+                                <Button
+                                  style={{ width: "100%" }}
+                                  color="primary"
+                                  outline
+                                  className="btn-dim btn-white  "
+                                  onClick={handleCopySponsorLink}
+                                >
+                                  <Icon name="user-add-fill"></Icon>
+                                  <span>Copy Sponsored Link </span>
+                                </Button>
+                              </td>
+                            </tr>
+                          ) : (
+                            <tr>
+                              <td>Sponsorship Link</td>
+                              <td>
+                                <Badge color="warning">
+                                  <div
+                                    style={{
+                                      width: "100%",
+                                      display: "flex",
+                                      flexDirection: "row",
+                                      justifyContent: "space-between",
+                                      cursor: "pointer",
+                                    }}
+                                    onClick={handleRefreshSponsorToke}
+                                  >
+                                    Not Eligible &nbsp;&nbsp;&nbsp; <Icon name="repeat-fill"></Icon>
+                                  </div>
+                                </Badge>
+                                <div></div>
+                              </td>
+                            </tr>
+                          )}
+
                           <tr>
                             <td>Invite Link</td>
                             <td>
@@ -385,7 +432,7 @@ const ContributorDashboard = () => {
                             </td>
                           </tr>
                           <tr>
-                            <td>Invite</td>
+                            <td>Direct Invite</td>
                             <td>
                               <Button
                                 style={{ width: "100%", marginTop: "5px" }}
@@ -695,7 +742,7 @@ const ContributorDashboard = () => {
                     </button>
                   }
                 >
-                  User Information
+                  Enter Information for the Invitee.
                 </ModalHeader>
                 <ModalBody>
                   <form onSubmit={handleSubmitUserInvite(submitInvite)}>
