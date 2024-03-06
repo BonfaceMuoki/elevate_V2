@@ -301,10 +301,12 @@ class AuthController extends Controller
                         if($resultsponsor!=null){
                           $user->save();
                           $created_user=$user;
-                        $response_investsponsored=$this->contributionservice->investForSponsored( $created_user,$oinvite);
+                          $response_investsponsored=$this->contributionservice->investForSponsored( $created_user,$oinvite);
                         }else{
-
-                            $user->save();
+                          
+                            return response()->json([
+                                'message' => 'Account has not been created successfully. This user cannot sponsor more people .',
+                            ], 400);
 
                         }
 
@@ -669,7 +671,7 @@ class AuthController extends Controller
        $whoinvited=$invitedetails->user_id;
        $eligible=  Contribution::where("user_id",$whoinvited)->where("tier_id",2)
       //->lockForUpdate()
-       ->whereRaw('((payback_paid_total - (subscription_total_used+sponsorship_total_used))) <> 0')->first();
+       ->whereRaw('((payback_paid_total - (150+sponsorship_total_used+60))) <> 0')->first();
        if($eligible!=null){
            return $eligible;
        }else{

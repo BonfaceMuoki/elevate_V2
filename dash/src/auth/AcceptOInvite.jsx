@@ -338,6 +338,9 @@ const AcceptOInvite = () => {
               <div className="form-note-s2 text-center pt-4">
                 <Link to="/login"> Login</Link>
               </div>
+              <div className="form-note-s2 text-center pt-1">
+                <Link to="/register"> Register a Direct Account</Link>
+              </div>
               {/* <div className="text-center pt-1 pb-1">
         <h6 className="overline-title overline-title-sap">
           <span>OR</span>

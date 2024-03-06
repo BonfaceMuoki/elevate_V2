@@ -778,6 +778,7 @@ const ContributorDashboard = () => {
                           </Alert>
                         )}
                       </a>
+                      0
                     </div>
                   </div>
                 </CardHeader>
@@ -797,15 +798,17 @@ const ContributorDashboard = () => {
                         {allinvites != undefined &&
                           allinvites.length > 0 &&
                           allinvites.map((invite, key) => {
-                            let is_sponsored = 0;
+                            let is_sponsored = 1;
                             if (invite?.one_time_invite_record?.length > 0) {
-                              if (invite?.one_time_invite_record?.is_sponsored === 1) {
+                              is_sponsored = 1;
+                              if (invite?.one_time_invite_record[0]?.is_sponsorship === 1) {
                                 is_sponsored = 1;
                               } else {
                                 is_sponsored = 0;
                               }
                             } else {
                               is_sponsored = 0;
+                              is_sponsored = 1;
                             }
                             return (
                               <tr key={key}>
@@ -816,7 +819,7 @@ const ContributorDashboard = () => {
                                   {is_sponsored === 0 ? (
                                     <Badge color="info">Non Sponsored</Badge>
                                   ) : (
-                                    <Badge color="info">Sponsored</Badge>
+                                    <Badge color="info">Sponsored </Badge>
                                   )}
                                 </td>
                                 <td>
