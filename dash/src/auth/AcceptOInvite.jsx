@@ -243,7 +243,7 @@ const AcceptOInvite = () => {
                       id="default-01"
                       {...registerAccesorRequestForm("phone_number", { required: "This field is required" })}
                       defaultValue=""
-                      placeholder="Enter your email address"
+                      placeholder="Enter your Phone Number"
                       className="form-control-lg form-control"
                     />
                     {requestvalueraccesserrors.phone_number?.message && (

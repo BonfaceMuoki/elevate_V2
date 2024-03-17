@@ -4,7 +4,16 @@ import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import ReCAPTCHA from "react-google-recaptcha";
-import { Block, BlockContent, BlockDes, BlockHead, BlockTitle, Button, Icon, PreviewCard } from "../components/Component";
+import {
+  Block,
+  BlockContent,
+  BlockDes,
+  BlockHead,
+  BlockTitle,
+  Button,
+  Icon,
+  PreviewCard,
+} from "../components/Component";
 import Head from "../layout/head/Head";
 import AuthFooter from "../pages/auth/AuthFooter";
 import { useRequestLenderCourtAccessMutation } from "../api/auth/inviteAccesorApiSlice";
@@ -34,16 +43,14 @@ const Signin = () => {
         icon: "warning",
         showCancelButton: true,
         confirmButtonText: "Yes.",
-        cancelButtonText: "No."
+        cancelButtonText: "No.",
       }).then((result) => {
-
         if (result.isConfirmed) {
           navigateto(`/accepting-oinvite?oinvite_token=${hasInvite}`);
         }
       });
     }
-  }, [hasInvite])
-
+  }, [hasInvite]);
 
   const toastMessage = (message, type) => {
     if (type == "success") {
@@ -82,11 +89,10 @@ const Signin = () => {
     }
   };
 
-
   const SITE_KEY = process.env.REACT_APP_reCAPTCHA_SITE_KEY;
   const captchaRef = useRef(null);
   const [passState, setPassState] = useState(false);
-  //register form 
+  //register form
   const schema = yup.object().shape({
     full_names: yup.string().required("Full name is required"),
     login_email: yup.string().required("Email is required"),
@@ -103,8 +109,14 @@ const Signin = () => {
       .oneOf([yup.ref("password"), null], "Passwords do not match.")
       .required("Please confirm the password"),
   });
-  const { register: registerAccesorRequestForm, isLoading: isSubmittingForm, reset: resetRequestForm, handleSubmit: handleSubmitRequestValuerAccess, formState: { errors: requestvalueraccesserrors } } = useForm({
-    resolver: yupResolver(schema)
+  const {
+    register: registerAccesorRequestForm,
+    isLoading: isSubmittingForm,
+    reset: resetRequestForm,
+    handleSubmit: handleSubmitRequestValuerAccess,
+    formState: { errors: requestvalueraccesserrors },
+  } = useForm({
+    resolver: yupResolver(schema),
   });
   const [submitAccessRequest, { isLoading: submittingInfor }] = useRequestLenderCourtAccessMutation();
   const sendRequestForm = async (data) => {
@@ -115,16 +127,12 @@ const Signin = () => {
       showCancelButton: true,
       confirmButtonText: "Proceed with direct registration.",
     }).then((result) => {
-
       if (result.isConfirmed) {
         proceedWithRegistartion(data);
       } else {
-
       }
     });
-
-
-  }
+  };
   const proceedWithRegistartion = async (data) => {
     const token = await captchaRef.current.getValue();
     const formDatareg = new FormData();
@@ -137,12 +145,12 @@ const Signin = () => {
     formDatareg.append("register_as", "Contributor");
 
     const result = await submitAccessRequest(formDatareg);
-    if ('error' in result) {
+    if ("error" in result) {
       Swal.fire({
         icon: "error",
         title: "Oops...",
         text: result.error.data.message,
-        focusConfirm: false
+        focusConfirm: false,
       });
     } else {
       Swal.fire({
@@ -157,11 +165,8 @@ const Signin = () => {
           navigateto("/login");
         }
       });
-
-
-
     }
-  }
+  };
   //close register page
 
   return (
@@ -235,7 +240,7 @@ const Signin = () => {
                   id="default-01"
                   {...registerAccesorRequestForm("phone_number", { required: "This field is required" })}
                   defaultValue=""
-                  placeholder="Enter your email address"
+                  placeholder="Enter your Phone Number"
                   className="form-control-lg form-control"
                 />
                 {requestvalueraccesserrors.phone_number?.message && (
@@ -261,43 +266,37 @@ const Signin = () => {
                         ev.preventDefault();
                         setPassState(!passState);
                       }}
-                      className={`form-icon lg form-icon-right passcode-switch ${passState ? "is-hidden" : "is-shown"
-                        }`}
+                      className={`form-icon lg form-icon-right passcode-switch ${passState ? "is-hidden" : "is-shown"}`}
                     >
                       <Icon name="eye" className="passcode-icon icon-show"></Icon>
                       <Icon name="eye-off" className="passcode-icon icon-hide"></Icon>
                     </a>
                     <input
                       type={passState ? "text" : "password"}
-
                       id="password"
                       {...registerAccesorRequestForm("password", { required: "This field is required" })}
                       defaultValue=""
                       placeholder="Enter your Password"
                       className={`form-control-lg form-control ${passState ? "is-hidden" : "is-shown"}`}
                     />
-                    {requestvalueraccesserrors.password?.message && <span className="invalid">{requestvalueraccesserrors.password?.message}</span>}
+                    {requestvalueraccesserrors.password?.message && (
+                      <span className="invalid">{requestvalueraccesserrors.password?.message}</span>
+                    )}
                   </div>
                 </div>
               </Col>
               <Col>
-
                 <div className="form-group">
                   <div className="form-label-group">
                     <label className="form-label" htmlFor="password">
                       Confirm Passwword
                     </label>
-
                   </div>
                   <div className="form-control-wrap">
                     <a
                       href="#password"
-
-                      className={`form-icon lg form-icon-right passcode-switch ${passState ? "is-hidden" : "is-shown"
-                        }`}
-                    >
-
-                    </a>
+                      className={`form-icon lg form-icon-right passcode-switch ${passState ? "is-hidden" : "is-shown"}`}
+                    ></a>
                     <input
                       type={passState ? "text" : "password"}
                       id="password"
@@ -306,7 +305,9 @@ const Signin = () => {
                       placeholder="Confirm Password"
                       className={`form-control-lg form-control ${passState ? "is-hidden" : "is-shown"}`}
                     />
-                    {requestvalueraccesserrors.confirm_password?.message && <span className="invalid">{requestvalueraccesserrors.confirm_password?.message}</span>}
+                    {requestvalueraccesserrors.confirm_password?.message && (
+                      <span className="invalid">{requestvalueraccesserrors.confirm_password?.message}</span>
+                    )}
                   </div>
                 </div>
               </Col>
@@ -317,13 +318,11 @@ const Signin = () => {
               <ReCAPTCHA className="recaptcha" sitekey={SITE_KEY} ref={captchaRef} />
             </div>
             <div className="form-group">
-              {
-                (!submittingInfor) &&
+              {!submittingInfor && (
                 <Button size="lg" className="btn-block" type="submit" color="primary">
                   Submit
                 </Button>
-              }
-
+              )}
             </div>
           </form>
 
@@ -338,7 +337,6 @@ const Signin = () => {
         </h6>
       </div> */}
         </PreviewCard>
-
       </Block>
       <AuthFooter />
     </>
