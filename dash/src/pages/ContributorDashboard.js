@@ -2,7 +2,11 @@ import React, { useEffect, useState } from "react";
 import Content from "../layout/content/Content";
 import Head from "../layout/head/Head";
 import { Card, CardHeader, CardFooter, CardBody, CardTitle } from "reactstrap";
-import { useGetAllTiersQuery, useGetRefreshedSponsoredTokenQuery } from "../api/commonEndPointsAPI";
+import {
+  useGetAllTiersQuery,
+  useGetRefreshedSponsoredTokenQuery,
+  useGetRefreshedNormalInviteTokenQuery,
+} from "../api/commonEndPointsAPI";
 import {
   Block,
   BlockDes,
@@ -57,11 +61,20 @@ const ContributorDashboard = () => {
   const walletforadmin = useSelector(selectSystemWallet);
   const { data: memberDetails, isLoading: loadingUserDetails } = useGetMyProfileDataQuery(logged?.user_id);
   let onetimesponsorshiptoken = useSelector(selectSponsorshipInviteToken);
+  let onetimeinvitetoken = useSelector(selectInviteToken);
+
+  let hasinvested = useSelector(selectHasInvested);
   const {
     data: refreshedSponsorToken,
     isLoading: loadingSponsorshipToken,
     refetch: refetchSponsorshipToken,
   } = useGetRefreshedSponsoredTokenQuery();
+
+  const {
+    data: refreshedNormalToken,
+    isLoading: loadingNormalInviteToken,
+    refetch: refetchNormalInviteToken,
+  } = useGetRefreshedNormalInviteTokenQuery();
 
   if (refreshedSponsorToken?.status === 1) {
     if (onetimesponsorshiptoken !== refreshedSponsorToken?.token && refreshedSponsorToken?.token !== undefined) {
@@ -74,12 +87,27 @@ const ContributorDashboard = () => {
     onetimesponsorshiptoken = null;
   }
 
+  if (refreshedNormalToken?.status === 1) {
+    if (
+      (onetimeinvitetoken !== refreshedNormalToken?.token && refreshedNormalToken?.token !== undefined) ||
+      hasinvested === 0
+    ) {
+      onetimesponsorshiptoken = refreshedNormalToken?.token;
+      hasinvested = 1;
+    } else {
+      console.log(refreshedSponsorToken, onetimeinvitetoken);
+      console.log(refreshedNormalToken?.token, "refreshedNormalToken");
+      console.log(hasinvested === 0, "refreshedNormalToken");
+    }
+  } else {
+    hasinvested = 0;
+    onetimeinvitetoken = null;
+  }
+
   // console.log(memberDetails, "memberDetails");
   useEffect(() => {
     dispatch(setActiveMemberProfile(memberDetails));
   }, [memberDetails]);
-
-  const onetimeinvitetoken = useSelector(selectInviteToken);
 
   const onetimeinvitelink =
     process.env.REACT_APP_FRONTEND_BASE_URL + "/accepting-oinvite?oinvite_token=" + onetimeinvitetoken;
@@ -164,7 +192,7 @@ const ContributorDashboard = () => {
       });
     }
   };
-  const hasinvested = useSelector(selectHasInvested);
+
   const { data: alltiers, isLoading: loadingtiers, refetch: refetchMyTiers } = useGetMyInvestmentsQuery();
   // console.log(alltiers);
   const { data: allinvites, isLoading: loadingInvites, refetch: refetchInvites } = useGetMyInvitesQuery();
@@ -319,6 +347,9 @@ const ContributorDashboard = () => {
   const handleRefreshSponsorToke = (e) => {
     refetchSponsorshipToken();
   };
+  const handleRefreshNormalInviteToken = (e) => {
+    refetchNormalInviteToken();
+  };
 
   return (
     <>
@@ -397,7 +428,12 @@ const ContributorDashboard = () => {
                             <tr>
                               <td>Sponsorship Link</td>
                               <td>
-                                <Badge color="warning">
+                                <Badge
+                                  color="warning"
+                                  style={{
+                                    width: "100%",
+                                  }}
+                                >
                                   <div
                                     style={{
                                       width: "100%",
@@ -419,33 +455,79 @@ const ContributorDashboard = () => {
                           <tr>
                             <td>Invite Link</td>
                             <td>
-                              <Button
-                                color="primary"
-                                style={{ width: "100%", marginTop: "5px" }}
-                                outline
-                                className="btn-dim btn-white  "
-                                onClick={handleCopyLink}
-                              >
-                                <Icon name="user-add-fill"></Icon>
-                                <span>Copy Link </span>
-                              </Button>
+                              {hasinvested == 0 && (
+                                <Badge
+                                  color="warning"
+                                  style={{
+                                    width: "100%",
+                                  }}
+                                >
+                                  <div
+                                    style={{
+                                      width: "100%",
+                                      display: "flex",
+                                      flexDirection: "row",
+                                      justifyContent: "space-between",
+                                      cursor: "pointer",
+                                    }}
+                                    onClick={handleRefreshNormalInviteToken}
+                                  >
+                                    Not Eligible &nbsp;&nbsp;&nbsp; <Icon name="repeat-fill"></Icon>
+                                  </div>
+                                </Badge>
+                              )}
+                              {hasinvested == 1 && (
+                                <Button
+                                  color="primary"
+                                  style={{ width: "100%", marginTop: "5px" }}
+                                  outline
+                                  className="btn-dim btn-white  "
+                                  onClick={handleCopyLink}
+                                >
+                                  <Icon name="user-add-fill"></Icon>
+                                  <span>Copy Link </span>
+                                </Button>
+                              )}
                             </td>
                           </tr>
                           <tr>
                             <td>Direct Invite</td>
                             <td>
-                              <Button
-                                style={{ width: "100%", marginTop: "5px" }}
-                                color="primary"
-                                outline
-                                className="btn-dim btn-white  "
-                                onClick={toggleForm}
-                                onContextMenu={handleContextMenu}
-                                onMouseDown={handleMouseDown}
-                              >
-                                <Icon name="user-add-fill"></Icon>
-                                <span>Invite User </span>
-                              </Button>
+                              {hasinvested == 0 && (
+                                <Badge
+                                  color="warning"
+                                  style={{
+                                    width: "100%",
+                                  }}
+                                >
+                                  <div
+                                    style={{
+                                      width: "100%",
+                                      display: "flex",
+                                      flexDirection: "row",
+                                      justifyContent: "space-between",
+                                      cursor: "pointer",
+                                    }}
+                                    onClick={handleRefreshNormalInviteToken}
+                                  >
+                                    Not Eligible &nbsp;&nbsp;&nbsp; <Icon name="repeat-fill"></Icon>
+                                  </div>
+                                </Badge>
+                              )}
+                              {hasinvested == 1 && (
+                                <Button
+                                  style={{ width: "100%", marginTop: "5px" }}
+                                  color="primary"
+                                  outline
+                                  className="btn-dim btn-white  "
+                                  onClick={toggleForm}
+                                  onContextMenu={handleContextMenu}
+                                  onMouseDown={handleMouseDown}
+                                >
+                                  <Icon name="user-add-fill"></Icon>
+                                  <span>Invite User </span>
+                                </Button>
+                              )}
                             </td>
                           </tr>
                         </tbody>

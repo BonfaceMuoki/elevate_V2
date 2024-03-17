@@ -273,4 +273,18 @@ class CommonController extends Controller
                         return ['status'=>1,'token'=>$invite->invite_token,'user'=>$user,'foundrecord'=>$found];                       
                      }
     }
+    public function getRefreshNormalInviteLink(){
+        $user=Auth()->user()->id;
+        $found= Contribution::where("user_id", $user)
+        ->where("tier_id", 1)
+        ->where("admin_approved", "Approved")              
+        ->select("*")
+        ->first();
+        if($found==null){
+           return ['status'=>0,'token'=>''];
+        }else{
+           $invite = UserIniviteOneTimeLink::where("user_id", $user)->where("is_sponsorship",0)->first();
+           return ['status'=>1,'token'=>$invite->invite_token,'user'=>$user,'foundrecord'=>$found];                       
+        }
+    }
 }

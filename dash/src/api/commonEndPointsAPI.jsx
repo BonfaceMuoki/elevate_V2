@@ -36,6 +36,12 @@ export const CommonEnpointsApi = apiSlice.injectEndpoints({
       keepUnusedDataFor: 5,
       refetchOnFocus: true,
     }),
+    getRefreshedNormalInviteToken: builder.query({
+      query: () => `/api/commons/get-refresh-normal-invite-link`,
+      skipCache: true,
+      keepUnusedDataFor: 5,
+      refetchOnFocus: true,
+    }),
     getAllCategories: builder.query({
       query: () => `/api/commons/get-all-categories`,
       skipCache: true,
@@ -126,6 +132,7 @@ export const CommonEnpointsApi = apiSlice.injectEndpoints({
 });
 
 export const {
+  useGetRefreshedNormalInviteTokenQuery,
   useGetRefreshedSponsoredTokenQuery,
   useGetAllTiersQuery,
   useGetSubLinksQuery,
