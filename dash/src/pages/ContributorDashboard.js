@@ -387,6 +387,8 @@ const ContributorDashboard = () => {
                       <p>You can also use our Bank Details as captured below</p>
                       <strong> BANK NAME: First National Bank(FNB) </strong>
                       <br></br>
+                      <strong> ACCOUNT HOLDER: Elevate Executive Club </strong>
+                      <br></br>
                       <strong> ACC NO: 63073536858 </strong>
                       <br></br>
                       <strong> BRANCH CODE: 252005 </strong>

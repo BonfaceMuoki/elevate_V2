@@ -17,7 +17,7 @@ return new class extends Migration
             $table->id();
             $table->integer("user_id");
             $table->string("payment_method");
-            $table->string("wallet_id");
+            $table->string("wallet_id")->nullable();
             $table->timestamps();
         });
     }

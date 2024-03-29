@@ -166,6 +166,10 @@ class CommonController extends Controller
                             $found = ContributorAccount::first();
                             $saveobject['payment_method'] = $request->payment_method;
                             $saveobject['wallet_id'] = $request->wallet_id;
+                            $saveobject['bank_name'] = $request->bank_name;
+                            $saveobject['bank_branch_name'] = $request->bank_branch_name;
+                            $saveobject['bank_account_number'] = $request->bank_account_number;
+                            $saveobject['bank_account_holder'] = $request->bank_account_holder;                            
                             $saveobject['user_id'] = $request->user;
                             if ($found == null) {
                                 $record = ContributorAccount::create($saveobject);

@@ -50,16 +50,31 @@ import UserAvatar from "./UserAvatar";
 import Swal from "sweetalert2";
 import { toast } from "react-toastify";
 import { Badge, DropdownMenu, DropdownToggle, UncontrolledDropdown, DropdownItem } from "reactstrap";
-import { useSelector } from "react-redux";
-import { useSendProductCreationMutation, useSendProductUpdateMutation, useGetLinkInviteesMutation } from "../../api/admin/adminActionsApi";
-import { useGetUserSubLinksQuery, useSendSubscriptionInviteesFettchMutation, useUpdatePersonalInformationMutation } from "../../api/commonEndPointsAPI";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  useSendProductCreationMutation,
+  useSendProductUpdateMutation,
+  useGetLinkInviteesMutation,
+} from "../../api/admin/adminActionsApi";
+import {
+  useGetUserSubLinksQuery,
+  useSendSubscriptionInviteesFettchMutation,
+  useUpdatePersonalInformationMutation,
+} from "../../api/commonEndPointsAPI";
 import {
   useGetSubLinksQuery,
   useSendAddRegistrationLinkMutation,
   useSendUpdateRegistrationLinkMutation,
 } from "../../api/commonEndPointsAPI";
 import { Link, useNavigate } from "react-router-dom";
-import { selectCurrentUser, selectMainRole, selectActiveMember, selectActiveUserDetails } from "../../featuers/authSlice";
+import {
+  selectCurrentUser,
+  selectMainRole,
+  selectActiveMember,
+  selectActiveUserDetails,
+  selectUserWallet,
+  setUserWallet,
+} from "../../featuers/authSlice";
 import makeAnimated from "react-select/animated";
 import Select from "react-select";
 
@@ -77,13 +92,18 @@ function UserProfile() {
   const currentuser = useSelector(selectCurrentUser);
   const activeuserd = useSelector(selectActiveUserDetails);
   const activememberd = useSelector(selectActiveMember);
+  const activeuserwallet = useSelector(selectUserWallet);
   const navigate = useNavigate();
-  const user = (currentRole?.role_name != "Contributor") ? activeuserd : activememberd;
-
-
+  const user = currentRole?.role_name != "Contributor" ? activeuserd : activememberd;
+  console.log(activeuserwallet, "activeuserwalletactiveuserwallet");
+  const dispatch = useDispatch();
   //   const [subLinks,setSubLinks]
   const { data: sublinks, isLoading: loadingsubscriptionLinks } = useGetSubLinksQuery();
-  const { data: usersublinks, isLoading: loadingusersubscriptionLinks, refetch: refetchUserSubLinks } = useGetUserSubLinksQuery(user.id);
+  const {
+    data: usersublinks,
+    isLoading: loadingusersubscriptionLinks,
+    refetch: refetchUserSubLinks,
+  } = useGetUserSubLinksQuery(user.id);
 
   //   refetchUserSubLinks
   const [existingLinksss, setExistingLinksss] = useState();
@@ -196,9 +216,9 @@ function UserProfile() {
     }
   }, [tableDataContri]);
   ///close setup for tiers
-  const activateDeactivate = async (supplier, action) => { };
-  const sendMail = () => { };
-  const viewSupplierProfile = () => { };
+  const activateDeactivate = async (supplier, action) => {};
+  const sendMail = () => {};
+  const viewSupplierProfile = () => {};
   const [modalAddRegistrationLink, setAddModalRegistrationLink] = useState();
   const toggleaddRegistrationLinkModal = () => {
     setAddModalRegistrationLink(!modalAddRegistrationLink);
@@ -214,8 +234,6 @@ function UserProfile() {
     full_name: yup.string().required("Please provide your Full Name"),
     email: yup.string().required("Email is required"),
     phone: yup.string().required("Phone is required"),
-    payment_method: yup.string().required("Payment Method is required"),
-    wallet: yup.string().required("Wallet ID is required"),
   });
   const {
     register: updatePersonalInfoForm,
@@ -223,41 +241,41 @@ function UserProfile() {
     setValue: setUpdatePersonalInforValue,
     isLoading: submittingUpdatePersonalInformation,
     formState: { errors: updatePersonalInfoErrors },
-    reset: resetUpdatePersonalInfoForm
+    reset: resetUpdatePersonalInfoForm,
   } = useForm({
     resolver: yupResolver(updatePersonalInfoschema),
   });
 
-  const [sendUpdatePersonalInfor, { isLoading: updatingPersonalInformation }] =
-    useUpdatePersonalInformationMutation();
+  const [sendUpdatePersonalInfor, { isLoading: updatingPersonalInformation }] = useUpdatePersonalInformationMutation();
 
   const submitUpdatePersonalInformation = async (data) => {
-
     const formData = new FormData();
     formData.append("full_name", data.full_name);
     formData.append("email", data.email);
     formData.append("phone", data.phone);
     formData.append("payment_method", data.payment_method);
     formData.append("wallet_id", data.wallet);
+    formData.append("bank_name", data.bank_name);
+    formData.append("bank_branch_name", data.bank_branch_name);
+    formData.append("bank_account_number", data.bank_account_number);
+    formData.append("bank_account_holder", data.bank_account_holder);
     formData.append("user", user?.id);
     formData.append("sys", 0);
     let result = await sendUpdatePersonalInfor(formData);
 
-
     if ("error" in result) {
-
       toastMessage(result.error.data.message, "warning");
       if ("backendvalerrors" in result.error.data) {
         toastMessage(result.error.data.message.join("\n"), "error");
       }
     } else {
+      dispatch(setUserWallet(result?.data?.record));
       togglemodalUpdatePersonalInfo();
       toastMessage(result.data.message, "success");
-      resetUpdatePersonalInfoForm()
+      resetUpdatePersonalInfoForm();
     }
   };
   //update personal information form
-
 
   //add supplier form
 
@@ -301,20 +319,18 @@ function UserProfile() {
       formData.append("registration_link_id", activeRegistrationLink.id);
       result = await sendUpdateaddregistrationlinkRequest(formData);
     } else {
-
       formData.append("action", "add");
       result = await sendAddaddregistrationlinkRequest(formData);
     }
 
     if ("error" in result) {
-
       toastMessage(result.error.data.message.join("\n"), "error");
       if ("backendvalerrors" in result.error.data) {
       }
     } else {
       toggleaddRegistrationLinkModal();
       toastMessage(result.data.message, "success");
-      resetAddRegistrationLinkForm()
+      resetAddRegistrationLinkForm();
       refetchUserSubLinks();
       setEditingngRegistrationLink(false);
     }
@@ -332,20 +348,20 @@ function UserProfile() {
   const [selectedLinkValue, setSelectedLinkValue] = useState(null);
 
   const showUpdateRegistrationLinkModal = async (registrationlink) => {
-
     setActiveRegistrationLink(registrationlink);
-    setRegistrationLinkValue("parent_link", [{
-      id: registrationlink.subscriplink_link_id,
-      value: registrationlink.subscriplink_link_id,
-      label: registrationlink.associated_parent_link.link,
-    }]);
+    setRegistrationLinkValue("parent_link", [
+      {
+        id: registrationlink.subscriplink_link_id,
+        value: registrationlink.subscriplink_link_id,
+        label: registrationlink.associated_parent_link.link,
+      },
+    ]);
     setRegistrationLinkValue("my_registration_invite", registrationlink.link_value);
 
     // if(selectedLinkValue!=null){
     setEditingngRegistrationLink(true);
     setAddModalRegistrationLink(true);
     // }
-
   };
   // updating product org
   const [sideBar, setSidebar] = useState(false);
@@ -360,7 +376,6 @@ function UserProfile() {
   const [activeTab, setActiveTab] = useState("invites");
   const [sendInviteesFetchRequest, { isLoading: loadingInvitees }] = useGetLinkInviteesMutation();
   const showLinkSubscriptionInviteees = async (sublink) => {
-
     const formData = new FormData();
     formData.append("user", user?.id);
     formData.append("tier", sublink?.associated_parent_link?.subscription_tier_level);
@@ -368,12 +383,10 @@ function UserProfile() {
     setModalShowInvitees(true);
 
     if ("error" in result) {
-
     } else {
-
       setMyLinkInviteees(result?.data?.pay_back_entries);
     }
-  }
+  };
 
   ///close setup for tiers
   const [modalShowInvitees, setModalShowInvitees] = useState();
@@ -384,7 +397,7 @@ function UserProfile() {
   // edit personal indexOfFirstItem
   const showProfileUpdateModal = () => {
     togglemodalUpdatePersonalInfo();
-  }
+  };
   // edit personal information
 
   const myRef = React.createRef();
@@ -398,27 +411,27 @@ function UserProfile() {
               <Icon name="cross" />
             </button>
           }
-        >
-
-        </ModalHeader>
+        ></ModalHeader>
         <ModalBody>
-          {
-            (myLinkInviteees && myLinkInviteees != null && myLinkInviteees != undefined) &&
+          {myLinkInviteees && myLinkInviteees != null && myLinkInviteees != undefined && (
             <table className="table table-bordered table-striped">
-              <thead><tr><th>Full Name</th></tr></thead>
+              <thead>
+                <tr>
+                  <th>Full Name</th>
+                </tr>
+              </thead>
               <tbody>
-                {
-                  myLinkInviteees.map((invit) => {
-
-                    return <tr key={invit.id}>
+                {myLinkInviteees.map((invit) => {
+                  return (
+                    <tr key={invit.id}>
                       {/* <td>{key}</td> */}
                       <td>{invit.full_name}</td>
                     </tr>
-                  })
-                }
+                  );
+                })}
               </tbody>
             </table>
-          }
+          )}
         </ModalBody>
         <ModalFooter className="bg-light">
           <span className="sub-text"></span>
@@ -451,7 +464,14 @@ function UserProfile() {
                         control={control}
                         defaultValue={null}
                         render={({ field }) => (
-                          <Select isMulti value={selectedLinkValue} options={existingLinksss} isSearchable={true} isClearable={true} {...field} />
+                          <Select
+                            isMulti
+                            value={selectedLinkValue}
+                            options={existingLinksss}
+                            isSearchable={true}
+                            isClearable={true}
+                            {...field}
+                          />
                         )}
                       />
                     )}
@@ -576,8 +596,8 @@ function UserProfile() {
                 </div>
               </Col>
             </Row>
-            <Row className="g-gs">
-              <Col md="6">
+            <Row className="g-gs mt-10">
+              {/* <Col md="6">
                 <div className="form-group">
                   <label className="form-label" htmlFor="fw-token-address">
                     Payment Method
@@ -595,11 +615,11 @@ function UserProfile() {
                     )}
                   </div>
                 </div>
-              </Col>
-              <Col md="6">
+              </Col> */}
+              <Col md="12">
                 <div className="form-group">
                   <label className="form-label" htmlFor="club">
-                    Wallet ID
+                    USDT-TRC20 Wallet Adress
                   </label>
                   <div className="form-control-wrap">
                     <input
@@ -608,6 +628,88 @@ function UserProfile() {
                       className="form-control"
                       id="wallet"
                       {...updatePersonalInfoForm("wallet")}
+                    />
+                    {updatePersonalInfoErrors.wallet?.message && (
+                      <span className="invalid">{updatePersonalInfoErrors.wallet?.message}</span>
+                    )}
+                  </div>
+                </div>
+              </Col>
+            </Row>
+            <Row className="g-gs">
+              <Col md="4">
+                <div className="form-group">
+                  <label className="form-label" htmlFor="fw-token-address">
+                    Bank Name
+                  </label>
+                  <div className="form-control-wrap">
+                    <input
+                      placeholder="Your Bank Name"
+                      type="text"
+                      defaultValue={activeuserwallet?.bank_name}
+                      className="form-control"
+                      id="payment_method"
+                      {...updatePersonalInfoForm("bank_name")}
+                    />
+                    {updatePersonalInfoErrors.payment_method?.message && (
+                      <span className="invalid">{updatePersonalInfoErrors.payment_method?.message}</span>
+                    )}
+                  </div>
+                </div>
+              </Col>
+              <Col md="4">
+                <div className="form-group">
+                  <label className="form-label" htmlFor="fw-token-address">
+                    Bank Branch
+                  </label>
+                  <div className="form-control-wrap">
+                    <input
+                      placeholder="Your Bank Branch"
+                      type="text"
+                      defaultValue={activeuserwallet?.bank_branch_name}
+                      className="form-control"
+                      id="payment_method"
+                      {...updatePersonalInfoForm("bank_branch_name")}
+                    />
+                    {updatePersonalInfoErrors.payment_method?.message && (
+                      <span className="invalid">{updatePersonalInfoErrors.payment_method?.message}</span>
+                    )}
+                  </div>
+                </div>
+              </Col>
+              <Col md="4">
+                <div className="form-group">
+                  <label className="form-label" htmlFor="club">
+                    Bank Account Number
+                  </label>
+                  <div className="form-control-wrap">
+                    <input
+                      placeholder="Your Bank Account Number"
+                      type="text"
+                      defaultValue={activeuserwallet?.bank_account_number}
+                      className="form-control"
+                      id="wallet"
+                      {...updatePersonalInfoForm("bank_account_number")}
+                    />
+                    {updatePersonalInfoErrors.wallet?.message && (
+                      <span className="invalid">{updatePersonalInfoErrors.wallet?.message}</span>
+                    )}
+                  </div>
+                </div>
+              </Col>
+              <Col md="12">
+                <div className="form-group">
+                  <label className="form-label" htmlFor="club">
+                    Bank Account Holder
+                  </label>
+                  <div className="form-control-wrap">
+                    <input
+                      placeholder="Your Bank Account Number"
+                      type="text"
+                      className="form-control"
+                      defaultValue={activeuserwallet?.bank_account_holder}
+                      id="wallet"
+                      {...updatePersonalInfoForm("bank_account_holder")}
                     />
                     {updatePersonalInfoErrors.wallet?.message && (
                       <span className="invalid">{updatePersonalInfoErrors.wallet?.message}</span>
@@ -725,7 +827,6 @@ function UserProfile() {
                                   type="search"
                                   className="form-control form-control-sm"
                                   placeholder="Search by name"
-
                                 />
                               </label>
                             </div>
@@ -803,12 +904,13 @@ function UserProfile() {
                                           <span className="tb-lead">
                                             {userinvite?.invite_name}{" "}
                                             <span
-                                              className={`dot dot-${userinvite.status === 1
-                                                ? "success"
-                                                : userinvite?.status === 0
+                                              className={`dot dot-${
+                                                userinvite.status === 1
+                                                  ? "success"
+                                                  : userinvite?.status === 0
                                                   ? "warning"
                                                   : "danger"
-                                                } d-md-none ms-1`}
+                                              } d-md-none ms-1`}
                                             >
                                               {userinvite.status === 1 ? "Completed" : "Pending"}
                                             </span>
@@ -870,7 +972,6 @@ function UserProfile() {
                                   type="search"
                                   className="form-control form-control-sm"
                                   placeholder="Search by name"
-
                                 />
                               </label>
                             </div>
@@ -912,10 +1013,10 @@ function UserProfile() {
                                 <span className="sub-text">Tier Name</span>
                               </DataTableRow>
                               <DataTableRow size="mb">
-                                <span className="sub-text">Membership Amount Fees  </span>
+                                <span className="sub-text">Membership Amount Fees </span>
                               </DataTableRow>
-                              {
-                                (currentRole?.role_name != "Contributor") && <>
+                              {currentRole?.role_name != "Contributor" && (
+                                <>
                                   <DataTableRow size="mb">
                                     <span className="sub-text">Payback Count </span>
                                   </DataTableRow>
@@ -923,7 +1024,7 @@ function UserProfile() {
                                     <span className="sub-text">Payback Amount</span>
                                   </DataTableRow>
                                 </>
-                              }
+                              )}
 
                               <DataTableRow size="mb">
                                 <span className="sub-text">Status</span>
@@ -942,12 +1043,12 @@ function UserProfile() {
                                       Club {contri?.contribution_tier.club} - {contri?.contribution_tier.tier_name}
                                     </DataTableRow>
                                     <DataTableRow size="mb">{contri?.contribution_amount}</DataTableRow>
-                                    {
-                                      (currentRole?.role_name != "Contributor") && <>
+                                    {currentRole?.role_name != "Contributor" && (
+                                      <>
                                         <DataTableRow size="mb">{contri?.payback_count}</DataTableRow>
                                         <DataTableRow size="mb">{contri?.payback_paid_total}</DataTableRow>
                                       </>
-                                    }
+                                    )}
 
                                     <DataTableRow size="mb">
                                       {contri.status == "Completed" && (
@@ -1044,7 +1145,6 @@ function UserProfile() {
                                   type="search"
                                   className="form-control form-control-sm"
                                   placeholder="Search by name"
-
                                 />
                               </label>
                             </div>
@@ -1107,12 +1207,14 @@ function UserProfile() {
                               usersublinks.links.map((sublink) => {
                                 return (
                                   <DataTableItem key={sublink.id}>
-                                    <DataTableRow>
-                                      {sublink?.associated_parent_link.link}
-                                    </DataTableRow>
+                                    <DataTableRow>{sublink?.associated_parent_link.link}</DataTableRow>
                                     <DataTableRow size="mb">{sublink?.link_value}</DataTableRow>
-                                    <DataTableRow size="mb">$ {sublink.associated_parent_link?.monthly_subscription_amount}</DataTableRow>
-                                    <DataTableRow size="mb">$ {sublink.associated_parent_link?.annual_subscription_amount}</DataTableRow>
+                                    <DataTableRow size="mb">
+                                      $ {sublink.associated_parent_link?.monthly_subscription_amount}
+                                    </DataTableRow>
+                                    <DataTableRow size="mb">
+                                      $ {sublink.associated_parent_link?.annual_subscription_amount}
+                                    </DataTableRow>
                                     <DataTableRow size="mb">
                                       {sublink.status == "Subscription Paid and Back Registrations Completed" && (
                                         <Badge color="success" style={{ width: "100%" }}>
@@ -1143,7 +1245,11 @@ function UserProfile() {
                                             <DropdownMenu end>
                                               <ul className="link-list-opt no-bdr">
                                                 <React.Fragment>
-                                                  <li onClick={() => showUpdateRegistrationLinkModal(sublink, "deactivate")}>
+                                                  <li
+                                                    onClick={() =>
+                                                      showUpdateRegistrationLinkModal(sublink, "deactivate")
+                                                    }
+                                                  >
                                                     <DropdownItem
                                                       tag="a"
                                                       href="#edit"
@@ -1155,7 +1261,9 @@ function UserProfile() {
                                                       <span>Update</span>
                                                     </DropdownItem>
                                                   </li>
-                                                  <li onClick={() => showLinkSubscriptionInviteees(sublink, "deactivate")}>
+                                                  <li
+                                                    onClick={() => showLinkSubscriptionInviteees(sublink, "deactivate")}
+                                                  >
                                                     <DropdownItem
                                                       tag="a"
                                                       href="#edit"
@@ -1220,13 +1328,11 @@ function UserProfile() {
                           ev.preventDefault();
                           showProfileUpdateModal();
                         }}
-                        className="btn-trigger btn-icon"
+                        className="btn-primary"
                       >
-                        <Icon name="edit"></Icon>
+                        Update Profile and Your Payment Details
                       </Button>
                     </li>
-
-
                   </ul>
                 </div>
 
