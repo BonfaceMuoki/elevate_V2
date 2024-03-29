@@ -144,8 +144,7 @@ class CommonController extends Controller
     public function updatePersonalInformation(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'payment_method' => 'required|max:255',
-            'wallet_id' => 'required',
+            'payment_method' => 'required|max:255'
         ]);
         if ($validator->fails()) {
             return response()->json(['data' => [], 'message' => Arr::flatten($validator->messages()->get('*')), 'success' => true], 400);
