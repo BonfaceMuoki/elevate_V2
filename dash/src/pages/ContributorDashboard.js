@@ -75,10 +75,11 @@ const ContributorDashboard = () => {
     isLoading: loadingNormalInviteToken,
     refetch: refetchNormalInviteToken,
   } = useGetRefreshedNormalInviteTokenQuery();
-
+  console.log(refreshedSponsorToken, "refreshedSponsorToken");
   if (refreshedSponsorToken?.status === 1) {
     if (onetimesponsorshiptoken !== refreshedSponsorToken?.token && refreshedSponsorToken?.token !== undefined) {
       onetimesponsorshiptoken = refreshedSponsorToken?.token;
+      console.log(refreshedSponsorToken, "refreshedSponsorToken");
     } else {
       console.log(refreshedSponsorToken, onetimesponsorshiptoken);
       console.log(refreshedSponsorToken, "refreshedSponsorToken");
@@ -92,7 +93,7 @@ const ContributorDashboard = () => {
       (onetimeinvitetoken !== refreshedNormalToken?.token && refreshedNormalToken?.token !== undefined) ||
       hasinvested === 0
     ) {
-      onetimesponsorshiptoken = refreshedNormalToken?.token;
+      onetimeinvitetoken = refreshedNormalToken?.token;
       hasinvested = 1;
     } else {
       console.log(refreshedSponsorToken, onetimeinvitetoken);
@@ -422,7 +423,7 @@ const ContributorDashboard = () => {
                                   onClick={handleCopySponsorLink}
                                 >
                                   <Icon name="user-add-fill"></Icon>
-                                  <span>Copy Sponsored Link </span>
+                                  <span>Copy Sponsored Link {onetimesponsorshiptoken} </span>
                                 </Button>
                               </td>
                             </tr>
