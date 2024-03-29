@@ -597,14 +597,14 @@ function UserProfile() {
               </Col>
             </Row>
             <Row className="g-gs mt-10">
-              {/* <Col md="6">
+              <Col md="6">
                 <div className="form-group">
                   <label className="form-label" htmlFor="fw-token-address">
-                    Payment Method
+                    Preffered Payment Method
                   </label>
                   <div className="form-control-wrap">
                     <input
-                      placeholder="Your Payment Method"
+                      placeholder="Bank or USDT-TRC20"
                       type="text"
                       className="form-control"
                       id="payment_method"
@@ -615,8 +615,8 @@ function UserProfile() {
                     )}
                   </div>
                 </div>
-              </Col> */}
-              <Col md="12">
+              </Col>
+              <Col md="6">
                 <div className="form-group">
                   <label className="form-label" htmlFor="club">
                     USDT-TRC20 Wallet Adress
