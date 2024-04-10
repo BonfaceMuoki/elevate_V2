@@ -604,6 +604,7 @@ function UserProfile() {
                   </label>
                   <div className="form-control-wrap">
                     <input
+                      defaultValue={activeuserwallet?.payment_method}
                       placeholder="Bank or USDT-TRC20"
                       type="text"
                       className="form-control"
@@ -623,6 +624,7 @@ function UserProfile() {
                   </label>
                   <div className="form-control-wrap">
                     <input
+                      defaultValue={activeuserwallet?.wallet_id}
                       placeholder="Your Wallet ID"
                       type="text"
                       className="form-control"
