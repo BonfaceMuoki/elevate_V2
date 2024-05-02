@@ -47,8 +47,11 @@ class Contribution extends Model
     public function getSponsoredRegistrationsAttribute(){
        $connections =  DB::table("contributions")
        ->join("system_user_invites","system_user_invites.invited_by","=","contributions.user_id")
+       ->join("user_inivite_onetime_links","user_inivite_onetime_links.invite_token","=","system_user_invites.invite_token")
        ->join("users","users.id","=","system_user_invites.completed_user_id")
-       ->where("contributions.tier_id",2)      
+       ->where("contributions.tier_id",2) 
+       ->where("user_inivite_onetime_links.is_sponsorship",1) 
+       ->where("system_user_invites.invited_by",$this->user->id) 
        ->get();
        return $connections;
 

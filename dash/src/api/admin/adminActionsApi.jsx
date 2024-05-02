@@ -105,8 +105,8 @@ export const adminActionsApi = apiSlice.injectEndpoints({
       }),
     }),
     getBonusPayments: builder.query({
-      query: (tier) => ({
-        url: `/api/admin/get-bonus-payments`,
+      query: ({ currentPage, rowsPerPage }) => ({
+        url: `/api/admin/get-bonus-payments?page=${currentPage}&no_records=${rowsPerPage}`,
         method: "GET",
         headers: {
           Accept: "Application/json",

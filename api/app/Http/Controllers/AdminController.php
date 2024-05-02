@@ -63,9 +63,8 @@ class AdminController extends Controller
  
     public function getSponsorshipLinks(){
 
-      $sponsors= Contribution::where("tier_id",2)
+      $sponsors= Contribution::with(['user'])->where("tier_id",2)
         ->join("users","users.id","contributions.user_id")
-        ->select()
         ->paginate(10);
         return $sponsors;
         
@@ -424,7 +423,7 @@ class AdminController extends Controller
     public function bonusPayments(Request $request)
     {
         // $payments = MasterPayment::with('Bonuses')->with('CompanyPayments')->with('MatrixPayments')->with('User')->get("*");
-        $payments = BonusPayment::with("payer")->get();
+        $payments = BonusPayment::with("payer")->paginate(10);
         return response()->json(['message' => 'loaded', 'data' => $payments], 200);
     }
     public function companyPayments(Request $request)

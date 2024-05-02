@@ -30,22 +30,22 @@ const menuadmin = [
     text: "Payments",
     active: false,
     subMenu: [
-      {
-        text: "Payments - Pending",
-        link: "/admin/pending-members-pay",
-      },
-      {
-        text: "Matrix - Payments List",
-        link: "/admin/matrix-payments-list",
-      },
+      // {
+      //   text: "Payments - Pending",
+      //   link: "/admin/pending-members-pay",
+      // },
+      // {
+      //   text: "Matrix - Payments List",
+      //   link: "/admin/matrix-payments-list",
+      // },
       {
         text: "Bonus - Payments List",
         link: "/admin/bonus-payments-list",
       },
-      {
-        text: "Company - Payments List",
-        link: "/admin/company-payments-list",
-      },
+      // {
+      //   text: "Company - Payments List",
+      //   link: "/admin/company-payments-list",
+      // },
     ],
   },
   {

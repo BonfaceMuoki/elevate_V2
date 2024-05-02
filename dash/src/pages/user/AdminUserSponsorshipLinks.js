@@ -137,6 +137,15 @@ function AdminusersList() {
     dispatch(setActiveUserDetails(user));
     navigateto("/user-profile");
   };
+  const handleCopyLink = (token) => {
+    const textArea1 = document.createElement("textarea");
+    textArea1.value = `${process.env.REACT_APP_FRONTEND_BASE_URL}/accepting-oinvite?oinvite_token=${token}`;
+    document.body.appendChild(textArea1);
+    textArea1.select();
+    document.execCommand("copy");
+    document.body.removeChild(textArea1);
+    toastMessage("copied", "success");
+  };
   return (
     <>
       <Head title="List Of Elavate  Members" />
@@ -203,19 +212,15 @@ function AdminusersList() {
                   <DataTableRow size="mb">
                     <span className="sub-text">Sponsored List</span>
                   </DataTableRow>
-                  <DataTableRow size="mb">
-                    <span className="sub-text">Eligible Sponsorships </span>
-                  </DataTableRow>
-                  <DataTableRow className="nk-tb-col-tools text-end">
-                    <span className="sub-text">Action</span>
-                  </DataTableRow>
                 </DataTableHead>
                 {users != undefined &&
                   users != null &&
                   users.data.map((user) => {
                     let eligiblesponsorships = 0;
                     if (user?.payback_paid_total > 150) {
-                      eligiblesponsorships = Math.floor((user?.payback_paid_total - 150) / 50);
+                      eligiblesponsorships = Math.floor(
+                        (user?.payback_paid_total - (150 + user.sponsorship_total_used + 60)) / 50
+                      );
                     }
                     return (
                       <DataTableItem key={user.id}>
@@ -245,101 +250,52 @@ function AdminusersList() {
                               <span>{user?.email}</span>
                             </div>
                           </div>
+                          &nbsp; <br />
+                          <div style={{ display: "flex", flexDirection: "row", gap: "5px" }}>
+                            {user.user.user_one_time_invite_links.map((va, ke) => {
+                              if (va.is_sponsorship === 1 && eligiblesponsorships > 0) {
+                                return (
+                                  <Button
+                                    color="primary"
+                                    outline
+                                    className="btn-dim btn-white  "
+                                    onClick={() => handleCopyLink(va.invite_token)}
+                                  >
+                                    <Icon name="briefcase"></Icon>
+                                    <span>Sponsorship Link </span>
+                                  </Button>
+                                );
+                              } else if (va.is_sponsorship === 0) {
+                                return (
+                                  <Button color="primary" outline onClick={() => handleCopyLink(va.invite_token)}>
+                                    <Icon name="briefcase"></Icon>
+                                    <span>Normal Link </span>
+                                  </Button>
+                                );
+                              }
+                            })}
+                          </div>
                           {/* </Link> */}
                         </DataTableRow>
                         <DataTableRow size="mb">{user?.payback_paid_total}</DataTableRow>
-                        <DataTableRow size="mb">{user?.payback_paid_total}</DataTableRow>
-                        <DataTableRow size="mb">{user?.payback_paid_total}</DataTableRow>
-                        <DataTableRow size="mb">{eligiblesponsorships}</DataTableRow>
-                        <DataTableRow className="nk-tb-col-tools">
-                          <ul className="nk-tb-actions gx-1">
-                            <li>
-                              <UncontrolledDropdown>
-                                <DropdownToggle tag="a" className="dropdown-toggle btn btn-icon btn-trigger">
-                                  <Icon name="more-h"></Icon>
-                                </DropdownToggle>
-                                <DropdownMenu end>
-                                  <ul className="link-list-opt no-bdr">
-                                    {user?.status === 1 && (
-                                      <React.Fragment>
-                                        <li onClick={() => activateDeactivate(user, "deactivate")}>
-                                          <DropdownItem
-                                            tag="a"
-                                            href="#edit"
-                                            onClick={(ev) => {
-                                              ev.preventDefault();
-                                            }}
-                                          >
-                                            <Icon name="cross"></Icon>
-                                            <span>Deactivate</span>
-                                          </DropdownItem>
-                                        </li>
-                                        {/* <li className="divider"></li> */}
-                                        {/* <li onClick={() => sendMail(item)}>
-                                        <DropdownItem
-                                          tag="a"
-                                          href="#suspend"
-                                          onClick={(ev) => {
-                                            ev.preventDefault();
-                                          }}
-                                        >
-                                          <Icon name="mail"></Icon>
-                                          <span>Send Mail</span>
-                                        </DropdownItem>
-                                      </li> */}
-                                        <li className="divider"></li>
-                                        <li onClick={() => viewUserProfile(user)}>
-                                          <DropdownItem
-                                            tag="a"
-                                            href="#suspend"
-                                            onClick={(ev) => {
-                                              ev.preventDefault();
-                                            }}
-                                          >
-                                            <Icon name="eye"></Icon>
-                                            <span>View Profile Details</span>
-                                          </DropdownItem>
-                                        </li>
-                                      </React.Fragment>
-                                    )}
-                                    {user?.status === 0 && (
-                                      <React.Fragment>
-                                        <li onClick={() => activateDeactivate(user, "activate")}>
-                                          <DropdownItem
-                                            tag="a"
-                                            href="#edit"
-                                            onClick={(ev) => {
-                                              ev.preventDefault();
-                                            }}
-                                          >
-                                            <Icon name="check"></Icon>
-                                            <span>Activate</span>
-                                          </DropdownItem>
-                                        </li>
-                                      </React.Fragment>
-                                    )}
-
-                                    {/* {user?.status === 0 && (
-                                    <React.Fragment>
-                                      <li onClick={() => viewRegistrationStatus(user)}>
-                                        <DropdownItem
-                                          tag="a"
-                                          href="#edit"
-                                          onClick={(ev) => {
-                                            ev.preventDefault();
-                                          }}
-                                        >
-                                          <Icon name="check"></Icon>
-                                          <span>View Company Details</span>
-                                        </DropdownItem>
-                                      </li>
-                                    </React.Fragment>
-                                  )} */}
-                                  </ul>
-                                </DropdownMenu>
-                              </UncontrolledDropdown>
-                            </li>
-                          </ul>
+                        <DataTableRow size="mb">{user?.sponsorship_total_used}</DataTableRow>
+                        <DataTableRow size="mb">
+                          <table className="table table-bordered">
+                            <thead>
+                              <tr>
+                                <td>Name</td>
+                                <td>Email</td>
+                              </tr>
+                            </thead>
+                            {user.sponsored_registrations.map((valu, ke) => {
+                              return (
+                                <tr>
+                                  <td>{valu.full_name}</td>
+                                  <td>{valu.email}</td>
+                                </tr>
+                              );
+                            })}
+                          </table>
                         </DataTableRow>
                       </DataTableItem>
                     );

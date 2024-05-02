@@ -25,7 +25,7 @@ class User extends Authenticatable implements JWTSubject
         'password',
         'is_active',
     ];
-
+    protected $with = ['userOneTimeInviteLinks'];
     /**
      * The attributes that should be hidden for serialization.
      *
@@ -35,6 +35,7 @@ class User extends Authenticatable implements JWTSubject
         'password',
         'remember_token',
     ];
+    // protected $with=['Invites'];
 
     /**
      * The attributes that should be cast.
@@ -93,6 +94,9 @@ class User extends Authenticatable implements JWTSubject
     public function orders()
     {
         return $this->hasMany(Order::class, "order_owner_id");
+    }
+    public function userOneTimeInviteLinks(){
+        return $this->hasMany(UserIniviteOneTimeLink::class,"user_id");
     }
 
 }

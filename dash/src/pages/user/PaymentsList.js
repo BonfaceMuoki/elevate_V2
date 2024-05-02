@@ -571,7 +571,8 @@ function PaymentsList() {
                                     image={""}
                                   ></UserAvatar>
                                   <div className="user-name">
-                                    <span className="tb-lead">{pay.user.full_name}</span>
+                                    <span className="tb-lead">{pay.user.full_name}</span> <br></br>
+                                    <span className="tb-lead">{pay.user.email}</span>
                                   </div>
                                 </div>
                               </DataTableRow>
