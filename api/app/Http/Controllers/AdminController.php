@@ -687,12 +687,12 @@ class AdminController extends Controller
                     }
                 } else {
                     $savepayment['user_id'] = $contribution->user_id;
-                    $savepayment['description'] = 'Auto payment of exiting Platform';
+                    $savepayment['description'] = 'Auto payment of exiting Platform.This is for company.';
                     $savepayment['payment_proof'] = 'Auto by Admin';
                     $savepayment['status'] = "APPROVED";
-                    $savepayment['amount_paid'] = 50;
+                    $savepayment['amount_paid'] = 60;
                     $masterpayment = MasterPayment::create($savepayment);
-                    $companypaymentob['amount_paid'] = 50;
+                    $companypaymentob['amount_paid'] = 60;
                     $companypaymentob['paid_by'] = $contribution->user_id;
                     $companypaymentob['paid_as'] = 'Exit from platform';
                     $companypaymentob['payment_id'] = $masterpayment->id;
