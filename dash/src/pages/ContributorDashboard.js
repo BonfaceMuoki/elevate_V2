@@ -411,7 +411,7 @@ const ContributorDashboard = () => {
                       <p>You can use the following links to invite people and earn a Bonus. </p>
                       <table style={{ width: "100%" }}>
                         <tbody>
-                          {onetimesponsorshiptoken !== null ? (
+                          {/* {onetimesponsorshiptoken !== null ? (
                             <tr>
                               <td>Sponsorship Link</td>
                               <td>
@@ -453,7 +453,7 @@ const ContributorDashboard = () => {
                                 <div></div>
                               </td>
                             </tr>
-                          )}
+                          )} */}
 
                           <tr>
                             <td>Invite Link</td>
