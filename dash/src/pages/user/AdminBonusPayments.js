@@ -319,7 +319,7 @@ function AdminBonusPayments() {
                   })}
               </DataTableBody>
               <div className="card-inner">
-                {users != null && users != undefined ? (
+                {totalRecords > 0 ? (
                   <PaginationComponent
                     itemPerPage={rowsPerPage}
                     totalItems={totalRecords}
