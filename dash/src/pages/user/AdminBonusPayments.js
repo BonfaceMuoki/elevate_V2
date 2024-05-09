@@ -85,6 +85,7 @@ function AdminBonusPayments() {
   const [currentItems, setcurrentItems] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemPerPage, setItemPerPage] = useState(10);
+  const [totalRecords, setTotalRecords] = useState(0);
   const {
     data: tierEarnings,
     isLoading: loadingTierEarnings,
@@ -97,12 +98,14 @@ function AdminBonusPayments() {
   } = useGetBonusPaymentsQuery({ currentPage, rowsPerPage });
 
   useEffect(() => {
-    if (bonusPayments != null) {
+    if (bonusPayments?.data?.data != null) {
+      setTotalRecords(bonusPayments?.data?.total);
       setTableData(bonusPayments?.data?.data);
+      // alert(totalRecords + "n" + totalRecords + "m" + rowsPerPage)
     } else {
       setTableData([{}]);
     }
-  }, [users]);
+  }, [loadingBonusPayment, bonusPayments?.data?.data]);
 
   useEffect(() => {
     if (tableData != null) {
@@ -318,8 +321,8 @@ function AdminBonusPayments() {
               <div className="card-inner">
                 {users != null && users != undefined ? (
                   <PaginationComponent
-                    itemPerPage={currentPage}
-                    totalItems={tableData?.length}
+                    itemPerPage={rowsPerPage}
+                    totalItems={totalRecords}
                     paginate={paginate}
                     currentPage={currentPage}
                   />
