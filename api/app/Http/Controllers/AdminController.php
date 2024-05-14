@@ -45,7 +45,17 @@ class AdminController extends Controller
         $this->subscriptionlinkservice = $subscriptionlinkservice;
         $this->contributionservice=$contributionservice;
         $this->middleware('auth:api')->except(['download','syncsponsorship']);
-        $this->middleware('Admin')->except(['getAllRoles', 'download']);
+        $this->middleware('Admin')->except(['getAllRoles', 'download','updateUserBonusPaymentsForSponsorship']);
+    }
+    public function updateUserBonusPaymentsForSponsorship()
+    {
+        $results = BonusPayment::select('user_invite_onetime_links.invite_count', 'bonus_payments.paid_by', 'user_invite_onetime_links.is_sponsorship', 'user_invite_onetime_links.invite_token')
+        ->join('master_payments', 'master_payments.id', '=', 'bonus_payments.payment_id')
+        ->join('system_user_invites', 'system_user_invites.completed_user_id', '=', 'master_payments.user_id')
+        ->join('user_invite_onetime_links', 'user_invite_onetime_links.invite_token', '=', 'system_user_invites.invite_token')
+        ->where('user_invite_onetime_links.is_sponsorship', 1)
+        ->orderBy('user_invite_onetime_links.invite_count', 'ASC')
+        ->get();
     }
     public function syncsponsorship(){
         User::cursor()->each(function ($user) {          

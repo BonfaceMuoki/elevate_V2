@@ -302,6 +302,7 @@ class ContributionService {
                     $companypaymentob['paid_as'] = 'Exit from platform';
                     $companypaymentob['payment_id'] = $masterpayment->id;
                     $companypayment = CompanyReceivedPayment::create($companypaymentob);
+                    // $this->exitUserToPhase( $contribution->user_id,100,1);
                 }
 
                 ///move earnings to earnings table
@@ -724,11 +725,12 @@ class ContributionService {
                     $bonusp['paid_by'] = $user->id;
                     $bonusp['bonus_for'] = 'Joining Bonus';
                     $bonusp['payment_id'] = $masterpayment->id;
+                    $bonusp['is_sponsorship'] = 1;                    
                     $bonusp = BonusPayment::create($bonusp);
 
                 }
                 //send to bonus
-                //update investment status
+                //update investm*ent status
                $sponsorshipdetails = $this->processSponsoredRegistration($invitedetails, $matrixpay);
                 //update investiment status
 
@@ -738,8 +740,7 @@ class ContributionService {
                 ], 201);
             }
             // upload Payment Proof
-            DB::commit();
-
+            DB::commit();            
             return response()->json([
                 'message' => 'Your registration is successful.',
                 'sponsorship_details'=>$sponsorshipdetails,
@@ -778,9 +779,114 @@ class ContributionService {
             return $eligible;
          }
          return $response;
-     }
+    }
 
+     //phase migrations
+    public function exitUserToPhase($user_id,$amount,$tier_id){
+        
 
+    }
+    public function registerTheNewUserForAllPhaseTiers($tier_id, $user_id)
+    {
+        try {
+            DB::beginTransaction();
+            // Get the tier details
+            $matoptions = MatrixOption::join("clubs", "clubs.id", "=", "matrix_options.club")
+            ->where("matrix_options.id", $tier_id)
+                ->select("matrix_options.*", "matrix_options.id as matrix_tier")
+                ->first();
+            // Check if user has any existing contributions
+            $countContributions = Contribution::where('user_id', auth()->user()->id)->count();
+            if ($countContributions == 0) {
+                // Save payment
+                $description = 'Migration to ' . $matoptions->club_name . " " . $matoptions->tier_name;
+                $savePayment = [
+                    'user_id' => $user_id,
+                    'description' =>  $description,
+                    'payment_proof' => "Auto Payment",
+                    'amount_paid' => $matoptions->contribution_amount
+                ];
+                $masterPayment = MasterPayment::create($savePayment);
+                //close Save payment
+                // Save contribution to matrix
+                $matrixContribution = [
+                    'user_id' => $user_id,
+                    'tier_id' => $matoptions->matrix_tier,
+                    'payback_paid_total' => 0,
+                    'contribution_amount' => $matoptions->contribution_amount,
+                    'payment_id' => $masterPayment->id
+                ];
+                $contribution_= Contribution::create($matrixContribution);
+                $user_to_pay =$this->checkTheUserInThisTierToReceivePayInATier($matoptions->matrix_tier);
+                if($contribution_ && sizeof($user_to_pay)>0){
+                    $this->payTierExistingUsers($contribution_);
+                }else if($contribution_ && sizeof($user_to_pay)==0){
+                    $this->payCompany($masterPayment->id,$description,$user_id, $matoptions->contribution_amount);
+                }
+                //close Save contribution to matrix    
+            } else {
+                return response()->json([
+                    'message' => 'You have already paid your membership fee.',
+                ], 201);
+            }
+            DB::commit();
+            return response()->json([
+                'message' => 'User registration and payment successful.',
+            ], 201);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'message' => 'Request has not been successfully processed. ' . $e->getMessage(),
+            ], 400);
+        }
+    }
+    
+    public function payTierExistingUsers($contribution){
+     $topayuser = Contribution::join("matrix_options", "matrix_options.id", "=", "contributions.tier_id")
+        ->where("contributions.payback_count","<",$contribution['payback_count'])
+        ->where("tier_id", $contribution['tier_id'])
+        ->orderBy("","DESC")
+        ->select("contributions.*")
+        ->first();
+        if( $topayuser){
+            $paybabckentry['contribution_id_reciving_payback'] = $topayuser->id;
+            $paybabckentry['contribution_id_paying_payback'] = $contribution->id;
+            $paybabckentry['payment_status'] = 'Verified';
+            $paybackentry = ContributionPayback::create($paybabckentry); 
+            $this->transitionUserToNexClubtTiers($topayuser,$topayuser->user_id);
+        }
+
+    }
+    public function payCompany($masterp,$description,$paid_by,$amount){
+        $companypaymentbob['amount_paid'] = $amount;
+        $companypaymentbob['paid_by'] = $paid_by;
+        $companypaymentbob['paid_as'] = $description;
+        $companypaymentbob['payment_method'] = 'Unspecified';
+        $companypaymentbob['status'] = 'Approved';
+        $companypaymentbob['payment_id'] = $masterp->id;
+        $companypayment = CompanyReceivedPayment::create($companypaymentbob);
+    }
+    public function  checkTheUserInThisTierToReceivePayInATier($tier){
+        return Contribution::join("matrix_options", "matrix_options.id", "=", "contributions.tier_id")
+        ->where("tier_id", $tier)
+        ->select("*","matrix_options.id as tier_id")
+        ->get()
+        ->toArray();
+    }
+    public function transitionUserToNexClubtTiers($contribution,$usertotransist){
+
+       $this->registerTheNewUserForAllPhaseTiers($contribution->club, $usertotransist);
+    }
+    public function getNextClubBasedOnCurrentTier($currentclub){
+
+         if($currentclub==="club 2"){
+
+         }else if($currentclub==="club 3"){
+
+         }else if($currentclub==="club 4"){
+
+         }
+    }
 }
 
 ?>
