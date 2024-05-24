@@ -45,11 +45,11 @@ class AdminController extends Controller
         $this->subscriptionlinkservice = $subscriptionlinkservice;
         $this->contributionservice=$contributionservice;
         $this->middleware('auth:api')->except(['download','syncsponsorship']);
-        $this->middleware('Admin')->except(['getAllRoles', 'download','updateUserBonusPaymentsForSponsorship']);
+        $this->middleware('Admin')->except(['getAllRoles', 'download','updateUserBonusPaymentsForSponsorship','exitUserToPhase']);
     }
     public function updateUserBonusPaymentsForSponsorship()
     {
-        $results = BonusPayment::select('user_invite_onetime_links.invite_count', 'bonus_payments.paid_by', 'user_invite_onetime_links.is_sponsorship', 'user_invite_onetime_links.invite_token')
+        $results = BonusPayment::with("")->select('user_invite_onetime_links.invite_count', 'bonus_payments.paid_by', 'user_invite_onetime_links.is_sponsorship', 'user_invite_onetime_links.invite_token')
         ->join('master_payments', 'master_payments.id', '=', 'bonus_payments.payment_id')
         ->join('system_user_invites', 'system_user_invites.completed_user_id', '=', 'master_payments.user_id')
         ->join('user_invite_onetime_links', 'user_invite_onetime_links.invite_token', '=', 'system_user_invites.invite_token')
@@ -70,6 +70,7 @@ class AdminController extends Controller
         });
         
     }
+
  
     public function getSponsorshipLinks(){
 
@@ -433,7 +434,16 @@ class AdminController extends Controller
     public function bonusPayments(Request $request)
     {
         // $payments = MasterPayment::with('Bonuses')->with('CompanyPayments')->with('MatrixPayments')->with('User')->get("*");
-        $payments = BonusPayment::with("payer")->paginate(10);
+        // $payments = BonusPayment::with("payer")->paginate(10);
+        $payments = BonusPayment::with("payer")
+        // ->select('user_inivite_onetime_links.invite_count', 'bonus_payments.paid_by', 'user_inivite_onetime_links.is_sponsorship', 'user_inivite_onetime_links.invite_token')
+        ->select('bonus_payments.*')
+        ->join('master_payments', 'master_payments.id', '=', 'bonus_payments.payment_id')
+        ->join('system_user_invites', 'system_user_invites.completed_user_id', '=', 'master_payments.user_id')
+        ->join('user_inivite_onetime_links', 'user_inivite_onetime_links.invite_token', '=', 'system_user_invites.invite_token')
+        ->where('user_inivite_onetime_links.is_sponsorship', 0)
+        ->orderBy('invite_count', 'ASC')
+        ->paginate(10);
         return response()->json(['message' => 'loaded', 'data' => $payments], 200);
     }
     public function companyPayments(Request $request)
@@ -1285,4 +1295,13 @@ class AdminController extends Controller
             return response()->json(['data' => [], 'message' => 'Failed.' . $exp->getMessage(), 'success' => true], 200);
         }
     }
+
+    public function exitUserToPhase(Request $request ){
+        
+        $response= $this->contributionservice->registerTheNewUserForAllPhaseTiers($request->club,$request->user,$request->prev_club,$request->amount_to_pay);
+        return $response;
+        // return "well";
+        
+    }
+  
 }

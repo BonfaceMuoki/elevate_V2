@@ -1,104 +1,104 @@
-# name: autodeploy 
-# on:
-#   push:
-#     branches:
-#       - master
-# jobs:
-#   build:
-#     name: Build
-#     runs-on: ubuntu-latest
-#     steps:
-#     - name: Making Env File
-#       uses: SpicyPizza/create-envfile@v1.3
-#       with:
-#         envkey_DB_HOST:  ${{ secrets.DB_HOST }}
-#         envkey_DB_PORT:  ${{ secrets.DB_PORT }}
-#         envkey_DB_DATABASE: ${{ secrets.DB_DATABASE }}
-#         envkey_DB_USERNAME:  ${{ secrets.DB_USERNAME }}
-#         envkey_DB_PASSWORD:  ${{ secrets.DB_PASSWORD }}
-#         envkey_DB_ACTIVE_GROUP: ${{ secrets.DB_ACTIVE_GROUP }}
-#         envkey_GOOGLE_SITE_KEY: ${{ secrets.GOOGLE_SITE_KEY }}
-#         envkey_GOOGLE_SECRET_KEY: ${{ secrets.GOOGLE_SECRET_KEY }}
-#         file_name: .env
-#         fail_on_empty: false    
-#     - name: Server Actions
-#       uses: appleboy/ssh-action@master
-#       with:
-#         host: ${{ secrets.HOST }}
-#         username: ${{ secrets.USERNAME }}
-#         password: ${{ secrets.PASSWORD }}
-#         port: ${{ secrets.PORT }}
-#         script: |
-#              cd /var/www/html     
-#              sudo git pull     
-#              cd /var/www/html/api
-#              sudo composer update --ignore-platform-reqs 
+name: autodeploy 
+on:
+  push:
+    branches:
+      - master
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+    - name: Making Env File
+      uses: SpicyPizza/create-envfile@v1.3
+      with:
+        envkey_DB_HOST:  ${{ secrets.DB_HOST }}
+        envkey_DB_PORT:  ${{ secrets.DB_PORT }}
+        envkey_DB_DATABASE: ${{ secrets.DB_DATABASE }}
+        envkey_DB_USERNAME:  ${{ secrets.DB_USERNAME }}
+        envkey_DB_PASSWORD:  ${{ secrets.DB_PASSWORD }}
+        envkey_DB_ACTIVE_GROUP: ${{ secrets.DB_ACTIVE_GROUP }}
+        envkey_GOOGLE_SITE_KEY: ${{ secrets.GOOGLE_SITE_KEY }}
+        envkey_GOOGLE_SECRET_KEY: ${{ secrets.GOOGLE_SECRET_KEY }}
+        file_name: .env
+        fail_on_empty: false    
+    - name: Server Actions
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        password: ${{ secrets.PASSWORD }}
+        port: ${{ secrets.PORT }}
+        script: |
+             cd /var/www/html     
+             sudo git pull     
+             cd /var/www/html/api
+             sudo composer update --ignore-platform-reqs 
 
-#              echo "APP_NAME=ElevateClub" > .env  
-#              echo "APP_ENV=true" >> .env  
-#              echo "APP_DEBUG=false" >> .env  
-#              echo "APP_KEY=base64:YI0zAJ6HI3Ec+N1yVuS14apUydAoGxgBuCS7LgWS/8M=" >> .env    
-#              echo "APP_URL=${{ secrets.REACT_APP_API_BASE_URL }}" >> .env 
+             echo "APP_NAME=ElevateClub" > .env  
+             echo "APP_ENV=true" >> .env  
+             echo "APP_DEBUG=false" >> .env  
+             echo "APP_KEY=base64:YI0zAJ6HI3Ec+N1yVuS14apUydAoGxgBuCS7LgWS/8M=" >> .env    
+             echo "APP_URL=${{ secrets.REACT_APP_API_BASE_URL }}" >> .env 
 
-#              echo "DB_CONNECTION=${{ secrets.DB_CONNECTION }}" >> .env
-#              echo "DB_HOST='${{ secrets.DB_HOST }}'" >> .env
-#              echo "DB_PORT='${{ secrets.DB_PORT }}'" >> .env
-#              echo "DB_DATABASE='${{ secrets.DB_DATABASE }}'" >> .env
-#              echo "DB_USERNAME='${{ secrets.DB_USERNAME }}'" >> .env
-#              echo "DB_PASSWORD='${{ secrets.DB_PASSWORD }}'" >> .env
+             echo "DB_CONNECTION=${{ secrets.DB_CONNECTION }}" >> .env
+             echo "DB_HOST='${{ secrets.DB_HOST }}'" >> .env
+             echo "DB_PORT='${{ secrets.DB_PORT }}'" >> .env
+             echo "DB_DATABASE='${{ secrets.DB_DATABASE }}'" >> .env
+             echo "DB_USERNAME='${{ secrets.DB_USERNAME }}'" >> .env
+             echo "DB_PASSWORD='${{ secrets.DB_PASSWORD }}'" >> .env
 
-#              echo "MAIL_MAILER=${{ secrets.MAIL_MAILER }}" >> .env
-#              echo "MAIL_HOST='${{ secrets.MAIL_HOST }}'" >> .env
-#              echo "MAIL_PORT='${{ secrets.MAIL_PORT }}'" >> .env
-#              echo "MAIL_USERNAME='${{ secrets.MAIL_USERNAME }}'" >> .env
-#              echo "MAIL_PASSWORD='${{ secrets.MAIL_PASSWORD }}'" >> .env
-#              echo "MAIL_ENCRYPTION='${{ secrets.MAIL_ENCRYPTION }}'" >> .env
-#              echo "MAIL_FROM_ADDRESS='${{ secrets.MAIL_FROM_ADDRESS }}'" >> .env
-#              echo "MAIL_FROM_NAME='${{ secrets.MAIL_FROM_NAME }}'" >> .env
+             echo "MAIL_MAILER=${{ secrets.MAIL_MAILER }}" >> .env
+             echo "MAIL_HOST='${{ secrets.MAIL_HOST }}'" >> .env
+             echo "MAIL_PORT='${{ secrets.MAIL_PORT }}'" >> .env
+             echo "MAIL_USERNAME='${{ secrets.MAIL_USERNAME }}'" >> .env
+             echo "MAIL_PASSWORD='${{ secrets.MAIL_PASSWORD }}'" >> .env
+             echo "MAIL_ENCRYPTION='${{ secrets.MAIL_ENCRYPTION }}'" >> .env
+             echo "MAIL_FROM_ADDRESS='${{ secrets.MAIL_FROM_ADDRESS }}'" >> .env
+             echo "MAIL_FROM_NAME='${{ secrets.MAIL_FROM_NAME }}'" >> .env
 
-#              echo "GOOGLE_SITE_KEY='${{ secrets.GOOGLE_SITE_KEY }}'" >> .env
-#              echo "GOOGLE_SECRET_KEY='${{ secrets.GOOGLE_SECRET_KEY }}'" >> .env  
-#              sudo chmod -R 777 storage
-#              sudo mkdir -p /var/www/html/api/public/proofs   
-#              sudo chmod -R 777 /var/www/html/api/public/proofs   
-#              php artisan migrate --force
-#              php artisan db:seed
-#              php artisan jwt:secret
-#              php artisan key:generate
-#              php artisan cache:clear
+             echo "GOOGLE_SITE_KEY='${{ secrets.GOOGLE_SITE_KEY }}'" >> .env
+             echo "GOOGLE_SECRET_KEY='${{ secrets.GOOGLE_SECRET_KEY }}'" >> .env  
+             sudo chmod -R 777 storage
+             sudo mkdir -p /var/www/html/api/public/proofs   
+             sudo chmod -R 777 /var/www/html/api/public/proofs   
+             php artisan migrate --force
+             php artisan db:seed
+             php artisan jwt:secret
+             php artisan key:generate
+             php artisan cache:clear
 
-#              cd /var/www/html/dash
+             cd /var/www/html/dash
            
-#              echo "SKIP_PREFLIGHT_CHECK=${{ secrets.SKIP_PREFLIGHT_CHECK }}" > .env
-#              echo "SKIP_PREFLIGHT_CHECK=${{ secrets.SKIP_PREFLIGHT_CHECK }}" >> .env
-#              echo "DISABLE_ESLINT_PLUGIN=${{ secrets.DISABLE_ESLINT_PLUGIN }}" >> .env
-#              echo "GENERATE_SOURCEMAP=${{ secrets.GENERATE_SOURCEMAP }}" >> .env
-#              echo "REACT_APP_FRONTEND_BASE_URL=${{ secrets.REACT_APP_FRONTEND_BASE_URL }}" >> .env
-#              echo "REACT_APP_FRONT_BASE_URL=${{ secrets.REACT_APP_FRONT_BASE_URL }}" >> .env
-#              echo "REACT_APP_API_BASE_URL=${{ secrets.REACT_APP_API_BASE_URL }}" >> .env
-#              echo "REACT_APP_API_IMAGE_BASE_URL=${{ secrets.REACT_APP_API_BASE_URL }}/storage" >> .env        
-#              echo "REACT_APP_reCAPTCHA_SITE_KEY=${{ secrets.GOOGLE_SITE_KEY }}" >> .env
-#              echo "REACT_APP_reCAPTCHA_SECRET_KEY=${{ secrets.GOOGLE_SECRET_KEY }}" >> .env     
+             echo "SKIP_PREFLIGHT_CHECK=${{ secrets.SKIP_PREFLIGHT_CHECK }}" > .env
+             echo "SKIP_PREFLIGHT_CHECK=${{ secrets.SKIP_PREFLIGHT_CHECK }}" >> .env
+             echo "DISABLE_ESLINT_PLUGIN=${{ secrets.DISABLE_ESLINT_PLUGIN }}" >> .env
+             echo "GENERATE_SOURCEMAP=${{ secrets.GENERATE_SOURCEMAP }}" >> .env
+             echo "REACT_APP_FRONTEND_BASE_URL=${{ secrets.REACT_APP_FRONTEND_BASE_URL }}" >> .env
+             echo "REACT_APP_FRONT_BASE_URL=${{ secrets.REACT_APP_FRONT_BASE_URL }}" >> .env
+             echo "REACT_APP_API_BASE_URL=${{ secrets.REACT_APP_API_BASE_URL }}" >> .env
+             echo "REACT_APP_API_IMAGE_BASE_URL=${{ secrets.REACT_APP_API_BASE_URL }}/storage" >> .env        
+             echo "REACT_APP_reCAPTCHA_SITE_KEY=${{ secrets.GOOGLE_SITE_KEY }}" >> .env
+             echo "REACT_APP_reCAPTCHA_SECRET_KEY=${{ secrets.GOOGLE_SECRET_KEY }}" >> .env     
 
 
-#              sudo npm install --force
-#              sudo npm run build --force
-#              cd build
-#              rm -r ../static
-#              mv static ../
-#              sudo mv * ../
+             sudo npm install --force
+             sudo npm run build --force
+             cd build
+             rm -r ../static
+             mv static ../
+             sudo mv * ../
 
-#              cd /var/www/html/home
+             cd /var/www/html/home
 
-#              echo "SKIP_PREFLIGHT_CHECK=${{ secrets.SKIP_PREFLIGHT_CHECK }}" > .env
-#              echo "DISABLE_ESLINT_PLUGIN=${{ secrets.DISABLE_ESLINT_PLUGIN }}" >> .env
-#              echo "GENERATE_SOURCEMAP=${{ secrets.GENERATE_SOURCEMAP }}" >> .env
-#              echo "REACT_APP_DASHBOARD_URL=${{ secrets.REACT_APP_DASHBOARD_URL }}" >> .env
-#              sudo npm install --force
-#              sudo npm run build
-#              cd build
-#              rm -r ../static
-#              mv static ../
-#              sudo mv  * ../
+             echo "SKIP_PREFLIGHT_CHECK=${{ secrets.SKIP_PREFLIGHT_CHECK }}" > .env
+             echo "DISABLE_ESLINT_PLUGIN=${{ secrets.DISABLE_ESLINT_PLUGIN }}" >> .env
+             echo "GENERATE_SOURCEMAP=${{ secrets.GENERATE_SOURCEMAP }}" >> .env
+             echo "REACT_APP_DASHBOARD_URL=${{ secrets.REACT_APP_DASHBOARD_URL }}" >> .env
+             sudo npm install --force
+             sudo npm run build
+             cd build
+             rm -r ../static
+             mv static ../
+             sudo mv  * ../
 
                

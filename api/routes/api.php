@@ -77,7 +77,9 @@ Route::group([
     'middleware' => 'api',
     'prefix' => 'admin',
 ], function ($router) {
-    
+
+    Route::post('/transist-to-phases', [AdminController::class, 'exitUserToPhase']);
+
     Route::post('/sync-sponsorship-links', [AdminController::class, 'syncsponsorship']);
     Route::get('/get-sponsorship-links', [AdminController::class, 'getSponsorshipLinks']);
     Route::post('/add-role', [AdminController::class, 'addRoles']);
@@ -122,6 +124,9 @@ Route::group([
     Route::get('/donwload-payment-proof', [AdminController::class, 'download']);
 
     Route::post('/update-order-product-status', [AdminController::class, 'updateOrderProductStatus']);
+
+  
+    
 
 });
 Route::post('/reset-password-request', [PasswordResetRequestController::class, 'sendPasswordResetEmail']);
