@@ -77,6 +77,7 @@ function AdminBonusPayments() {
       });
     }
   };
+  const [searchText, setSearchText] = useState("");
   const [activateDeactivateUser, { isLoading: submittingactivation }] = useDeactivateUserMutation();
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
   const { data: users, isLoading: loadingusers, refetch: refetchUsers } = useGetUsersQuery();
@@ -95,7 +96,7 @@ function AdminBonusPayments() {
     data: bonusPayments,
     isLoading: loadingBonusPayment,
     refetch: refetchBonusPayments0,
-  } = useGetBonusPaymentsQuery({ currentPage, rowsPerPage });
+  } = useGetBonusPaymentsQuery({ currentPage, searchText, rowsPerPage });
 
   useEffect(() => {
     if (bonusPayments?.data?.data != null) {
@@ -171,7 +172,15 @@ function AdminBonusPayments() {
                   <div id="DataTables_Table_0_filter" className="dataTables_filter">
                     <label>
                       &nbsp;<br></br>
-                      <input type="search" className="form-control form-control-sm" placeholder="Search by name" />
+                      <input
+                        type="search"
+                        className="form-control form-control-sm"
+                        placeholder="Search by name"
+                        onChange={(e) => {
+                          setCurrentPage(1);
+                          setSearchText(e.target.value);
+                        }}
+                      />
                     </label>
                   </div>
                 </Col>

@@ -433,19 +433,24 @@ class AdminController extends Controller
     }
     public function bonusPayments(Request $request)
     {
-        // $payments = MasterPayment::with('Bonuses')->with('CompanyPayments')->with('MatrixPayments')->with('User')->get("*");
-        // $payments = BonusPayment::with("payer")->paginate(10);
-        $payments = BonusPayment::with("payer")
-        // ->select('user_inivite_onetime_links.invite_count', 'bonus_payments.paid_by', 'user_inivite_onetime_links.is_sponsorship', 'user_inivite_onetime_links.invite_token')
-        ->select('bonus_payments.*')
-        ->join('master_payments', 'master_payments.id', '=', 'bonus_payments.payment_id')
-        ->join('system_user_invites', 'system_user_invites.completed_user_id', '=', 'master_payments.user_id')
-        ->join('user_inivite_onetime_links', 'user_inivite_onetime_links.invite_token', '=', 'system_user_invites.invite_token')
-        ->where('user_inivite_onetime_links.is_sponsorship', 0)
-        ->orderBy('invite_count', 'ASC')
-        ->paginate(10);
+        $payments = BonusPayment::with('payer')
+            ->select('bonus_payments.*')
+            ->join('master_payments', 'master_payments.id', '=', 'bonus_payments.payment_id')
+            ->join('system_user_invites', 'system_user_invites.completed_user_id', '=', 'master_payments.user_id')
+            ->join('users', 'users.id', '=', 'master_payments.user_id')
+            ->join('user_inivite_onetime_links', 'user_inivite_onetime_links.invite_token', '=', 'system_user_invites.invite_token')
+            ->where('user_inivite_onetime_links.is_sponsorship', 0);
+    
+        if ($request->filled('search')) {
+            $payments->where('users.full_name', 'like', "%{$request->search}%");
+        }
+    
+        $payments = $payments->orderBy('user_inivite_onetime_links.invite_count', 'ASC')
+                             ->paginate(10);
+    
         return response()->json(['message' => 'loaded', 'data' => $payments], 200);
     }
+    
     public function companyPayments(Request $request)
     {
         $payments = CompanyReceivedPayment::with("payer")->get();
