@@ -50,9 +50,11 @@ class Contribution extends Model
        ->join("user_inivite_onetime_links","user_inivite_onetime_links.invite_token","=","system_user_invites.invite_token")
        ->join("users","users.id","=","system_user_invites.completed_user_id")
        ->where("contributions.tier_id",2) 
-       ->where("user_inivite_onetime_links.is_sponsorship",1) 
-       ->where("system_user_invites.invited_by",$this->user->id) 
-       ->get();
+       ->where("user_inivite_onetime_links.is_sponsorship",1);
+       if($this->user){
+        $connections->where("system_user_invites.invited_by",$this->user->id);
+       }       
+       $connections->get();
        return $connections;
 
     }
