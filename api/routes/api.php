@@ -41,6 +41,8 @@ Route::group([
     'middleware' => 'api',
     'prefix' => 'commons',
 ], function ($router) {
+    Route::get('/get-all-contributions', [CommonController::class, 'getAllContributions']);
+
     Route::get('/get-all-categories', [CommonController::class, 'getAllCategories']);
     Route::get('/get-refresh-sponsored-link', [CommonController::class, 'getRefreshSponsoredLink']);
     Route::get('/get-refresh-normal-invite-link', [CommonController::class, 'getRefreshNormalInviteLink']);
@@ -78,7 +80,12 @@ Route::group([
     'prefix' => 'admin',
 ], function ($router) {
 
+    
+
     Route::post('/transist-to-phases', [AdminController::class, 'exitUserToPhase']);
+
+    Route::get('/get-sponsor-links', [AdminController::class, 'getRegistredSponsorshipLinks']);
+    
 
     Route::post('/sync-sponsorship-links', [AdminController::class, 'syncsponsorship']);
     Route::get('/get-sponsorship-links', [AdminController::class, 'getSponsorshipLinks']);
@@ -124,6 +131,11 @@ Route::group([
     Route::get('/donwload-payment-proof', [AdminController::class, 'download']);
 
     Route::post('/update-order-product-status', [AdminController::class, 'updateOrderProductStatus']);
+
+    Route::post('/sync-expected-sponsorship-amounts', [AdminController::class, 'syncSponsorshipsEntriesOnContributions']);
+    Route::post('/sync-registered-sponsors-to-contributions', [AdminController::class, 'syncRegisteredSponsorshipsOnContributions']);
+
+    
 
   
     

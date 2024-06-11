@@ -304,7 +304,10 @@ class ContributionService
                     $companypaymentob['paid_as'] = 'Exit from platform';
                     $companypaymentob['payment_id'] = $masterpayment->id;
                     $companypayment = CompanyReceivedPayment::create($companypaymentob);
-                    // $this->exitUserToPhase( $contribution->user_id,100,1);
+
+                    $this->registerTheNewUserForAllPhaseTiers(2, $contribution->user_id, 1, 100);
+
+                
                 }
 
                 ///move earnings to earnings table
@@ -399,6 +402,7 @@ class ContributionService
                 // $matrixcontribution['admin_approved']="Approved";
                 $matrixcontribution['contribution_amount'] = $nexttier->contribution_amount;
                 $matrixcontribution['payment_id'] = $masterpayment->id;
+                $matrixcontribution['expected_amount_for_sponsorship'] = $nexttier->recruitment_amount;
                 $contribution = Contribution::create($matrixcontribution);
                 //auto approve Pay
                 $thismatser = MasterPayment::where("id", $masterpayment->id)->with('Bonuses')->with('CompanyPayments')->with('MatrixPayments')->first();
@@ -472,7 +476,7 @@ class ContributionService
                 // $matrixcontribution['admin_approved']="Approved";
                 $matrixcontribution['contribution_amount'] = $nexttier->contribution_amount;
                 $matrixcontribution['payment_id'] = $masterpayment->id;
-
+                $matrixcontribution['expected_amount_for_sponsorship'] = $nexttier->recruitment_amount;
                 array_push($response, [
                     'Passed to upgrade to next tier option 2' => $nexttier->id,
                     'newcontribution' => $matrixcontribution
@@ -517,11 +521,6 @@ class ContributionService
                 return $contribution_tier;
             } elseif ($currenttier->tier_name == 'Tier 2') {
                 $contribution_tier = MatrixOption::where('tier_name', 'Tier 3')->first();
-
-                return $contribution_tier;
-            } elseif ($currenttier->tier_name == 'Tier 3') {
-                $contribution_tier = MatrixOption::where('tier_name', 'Tier 4')->first();
-
                 return $contribution_tier;
             }
         }
@@ -675,7 +674,7 @@ class ContributionService
 
         return $fileName;
     }
-    public function investForSponsored($user, $invitedetails)
+    public function investForSponsored($user, $invitedetails,$sponsoringcontribution)
     {
 
         try {
@@ -712,6 +711,7 @@ class ContributionService
                 $matrixcontribution['payback_paid_total'] = 0;
                 $matrixcontribution['contribution_amount'] = 50 - 20;
                 $matrixcontribution['payment_id'] = $masterpayment->id;
+                $matrixcontribution['expected_amount_for_sponsorship'] = $tier1->recruitment_amount;
                 $contribution = Contribution::create($matrixcontribution);
                 //send to matrix
                 //send to bonus
@@ -733,12 +733,13 @@ class ContributionService
                 }
                 //send to bonus
                 //update investm*ent status
-                $sponsorshipdetails = $this->processSponsoredRegistration($invitedetails, $matrixpay);
+                $sponsorshipdetails = $this->processSponsoredRegistration($invitedetails, $matrixpay,$sponsoringcontribution);
                 //update investiment status
 
             } else {
                 return response()->json([
                     'message' => 'You have already paid your membership fee.',
+                    'allmesag'=> $sponsorshipdetails
                 ], 201);
             }
             // upload Payment Proof
@@ -758,17 +759,19 @@ class ContributionService
             ], 400);
         }
     }
-    public function processSponsoredRegistration($invitedetails, $payment)
+    public function processSponsoredRegistration($invitedetails, $payment,$sponsoringcontribution)
     {
-        $whoinvited = $invitedetails->user_id;
+        $whoinvited = $invitedetails->user_id;        
         $response = null;
-        $eligible =  Contribution::where("user_id", $whoinvited)->where("tier_id", 2)
-            ->lockForUpdate()
-            ->whereRaw('((payback_paid_total - (150+sponsorship_total_used+60))) <> 0')->first();
+        $eligible =  Contribution::find($sponsoringcontribution->id);
+
         if ($eligible != null) {
             // update
             $eligible->increment("sponsorship_total_used", 50);
             if ($eligible->save()) {
+
+                $response['sponsoring_contribution']= $sponsoringcontribution;
+                $response['eligible']= $eligible;                
                 $response['auto_approval_details'] = $this->autoVerifySponsorshipPayment($payment, 1);
             } else {
                 $response['auto_approval_details'] = [];
@@ -837,13 +840,16 @@ class ContributionService
                         // Save payment
 
                         //close Save payment
+                        //
+             
                         // Save contribution to matrix
                         $matrixContribution = [
                             'user_id' => $user_id,
                             'tier_id' => $matoptions->matrix_tier,
                             'payback_paid_total' => 0,
                             'contribution_amount' => $matoptions->contribution_amount,
-                            'payment_id' => $masterPayment->id
+                            'payment_id' => $masterPayment->id,
+                            'expected_amount_for_sponsorship'=>$matoptions->recruitment_amount
                         ];
                         $contribution_ = Contribution::create($matrixContribution);
                         // ($tier, $notuser,$paybackcount,$paybackamount)
@@ -887,11 +893,10 @@ class ContributionService
                         //transition user
                     }
                 }
-if($user_to_pay){
-    $transitionedmsg = $this->transitionUserToNexClubtTiers($club, $user_to_pay, $totalforclub->total_to_receive, $totalforclub->total_to_pay, $matoptions->matrix_tier);
-    array_push($transitioned, $transitionedmsg);
-}
-              
+                if ($user_to_pay) {
+                    $transitionedmsg = $this->transitionUserToNexClubtTiers($club, $user_to_pay, $totalforclub->total_to_receive, $totalforclub->total_to_pay, $matoptions->matrix_tier);
+                    array_push($transitioned, $transitionedmsg);
+                }
             }
 
 
@@ -1004,15 +1009,15 @@ if($user_to_pay){
             $user_id = $usertotransist->user_id;
             $prev_club = $club;
             $amoun_paid = $getnextclub['total_to_pay'];
-            $migrationresults=$this->registerTheNewUserForAllPhaseTiers($clubnext['club_details']['club_id'], $usertotransist->user_id, $prev_club->club, $amoun_paid);
+            $migrationresults = $this->registerTheNewUserForAllPhaseTiers($clubnext['club_details']['club_id'], $usertotransist->user_id, $prev_club->club, $amoun_paid);
             return [
                 'code' => 1,
-                'migration_data'=>['club'=>$clubnext['club_details']['club_id'],'user_id'=>$usertotransist->user_id,'prev'=>$prev_club->club,'amount'=>$amoun_paid],
+                'migration_data' => ['club' => $clubnext['club_details']['club_id'], 'user_id' => $usertotransist->user_id, 'prev' => $prev_club->club, 'amount' => $amoun_paid],
                 'checkers' => ['club' => $club, 'usertotransit' => $usertotransist, 'clubtargettoreceive' => $clubtargettoreceive, 'clubtargettosend' => $clubtargettosend, 'clubtargettosend' => $clubtargettosend, 'currenttier' => $currenttier],
                 'existingresults' => $check,
                 'nextclub' => $getnextclub,
-                'prev_club'=>$prev_club,
-                'migrationresults'=>$migrationresults,
+                'prev_club' => $prev_club,
+                'migrationresults' => $migrationresults,
                 'message' => 'Successfully transitioned'
             ];
         } else {
@@ -1030,12 +1035,12 @@ if($user_to_pay){
         //     DB::beginTransaction();
         $currenttierclub = MatrixOption::join("clubs", "clubs.id", "=", "matrix_options.club")
             ->where("matrix_options.id", $currenttier)
-            ->select("matrix_options.id as matrix_id", "clubs.club_name as club_name","matrix_options.club as club_id")->first();
-        $nextclub['current']= $currenttierclub;
+            ->select("matrix_options.id as matrix_id", "clubs.club_name as club_name", "matrix_options.club as club_id")->first();
+        $nextclub['current'] = $currenttierclub;
         if ($currenttierclub->club_name == "club 2") {
             $nextclub['club_details'] = MatrixOption::join("clubs", "clubs.id", "=", "matrix_options.club")
                 ->where("clubs.club_name", "club 3")
-                ->select("matrix_options.*","matrix_options.club as club_id")
+                ->select("matrix_options.*", "matrix_options.club as club_id")
                 ->first();
             $nextclub['total_to_pay'] = MatrixOption::join("clubs", "clubs.id", "=", "matrix_options.club")
                 ->where("clubs.club_name", "club 3")
@@ -1046,7 +1051,7 @@ if($user_to_pay){
         } else if ($currenttierclub->club_name == "club 3") {
             $nextclub['club_details'] = MatrixOption::join("clubs", "clubs.id", "=", "matrix_options.club")
                 ->where("clubs.club_name", "club 4")
-                ->select("matrix_options.*","matrix_options.club as club_id")
+                ->select("matrix_options.*", "matrix_options.club as club_id")
                 ->first();
             $nextclub['total_to_pay'] = MatrixOption::join("clubs", "clubs.id", "=", "matrix_options.club")
                 ->where("clubs.club_name", "club 4")
@@ -1057,7 +1062,7 @@ if($user_to_pay){
         } else if ($currenttierclub->club_name == "club 4") {
             $nextclub['club_details'] = MatrixOption::join("clubs", "clubs.id", "=", "matrix_options.club")
                 ->where("clubs.club_name", "club 1")
-                ->select("matrix_options.*","matrix_options.club as club_id")
+                ->select("matrix_options.*", "matrix_options.club as club_id")
                 ->first();
             $nextclub['total_to_pay'] = MatrixOption::join("clubs", "clubs.id", "=", "matrix_options.club")
                 ->where("clubs.club_name", "club 1")
@@ -1066,6 +1071,10 @@ if($user_to_pay){
                 ->first()
                 ->total_to_pay;
         }
+       
         return $nextclub;
+    }
+    public function syncSponsorshipsEntriesOnContributions(Request $request){
+        
     }
 }

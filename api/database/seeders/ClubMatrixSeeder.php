@@ -15,12 +15,14 @@ class ClubMatrixSeeder extends Seeder
      */
     public function run()
     {
-        //
-        $clubs = array(
-            array(
+        $clubs = [
+            [
                 'club_name' => 'club 1',
-                'tiers' => array(
-                    array(
+                'id' => 1,
+                'order_level' => 1,
+                'tiers' => [
+                    [
+                        'id' => 1,
                         'tier_name' => 'Tier 1',
                         'contribution_amount' => 30,
                         'payback_amount' => 30,
@@ -35,8 +37,10 @@ class ClubMatrixSeeder extends Seeder
                         'matrix_amount' => 30,
                         'bonus_amount' => 30,
                         'recruitment_amount' => 0,
-                    ),
-                    array(
+                        'min_payback_to_sponsor'=>0
+                    ],
+                    [
+                        'id' => 2,
                         'tier_name' => 'Tier 2',
                         'contribution_amount' => 90,
                         'payback_amount' => 810,
@@ -50,14 +54,18 @@ class ClubMatrixSeeder extends Seeder
                         'elevate_company_amount' => 0,
                         'matrix_amount' => 90,
                         'bonus_amount' => 0,
-                        'recruitment_amount' => 0,
-                    ),
-                ),
-            ),
-            array(
+                        'recruitment_amount' => 600,
+                        'min_payback_to_sponsor'=>210
+                    ],
+                ],
+            ],
+            [
                 'club_name' => 'club 2',
-                'tiers' => array(
-                    array(
+                'id' => 2,
+                'order_level' => 2,
+                'tiers' => [
+                    [
+                        'id' => 3,
                         'tier_name' => 'Tier 1',
                         'contribution_amount' => 15,
                         'payback_amount' => 45,
@@ -72,8 +80,9 @@ class ClubMatrixSeeder extends Seeder
                         'matrix_amount' => 15,
                         'bonus_amount' => 0,
                         'recruitment_amount' => 0,
-                    ),
-                    array(
+                    ],
+                    [
+                        'id' => 4,
                         'tier_name' => 'Tier 2',
                         'contribution_amount' => 25,
                         'payback_amount' => 225,
@@ -88,29 +97,33 @@ class ClubMatrixSeeder extends Seeder
                         'matrix_amount' => 25,
                         'bonus_amount' => 0,
                         'recruitment_amount' => 0,
-                    ),
-                    array(
+                    ],
+                    [
+                        'id' => 5,
                         'tier_name' => 'Tier 3',
                         'contribution_amount' => 60,
                         'payback_amount' => 1620,
                         'minimum_progression_count' => 27,
                         'minimum_progression_amount' => 1620,
-                        'payback_count' => 1620,
+                        'payback_count' => 27,
                         'order_level' => 3,
                         'withdrawal' => 730,
                         'reinvestment' => 300,
                         'elevate_company_amount' => 290,
                         'matrix_amount' => 60,
                         'bonus_amount' => 0,
-                        'recruitment_amount' => 0,
+                        'recruitment_amount' => 300,
                         'subscription_amount' => 300,
-                    ),
-                ),
-            ),
-            array(
+                    ],
+                ],
+            ],
+            [
                 'club_name' => 'club 3',
-                'tiers' => array(
-                    array(
+                'id' => 3,
+                'order_level' => 3,
+                'tiers' => [
+                    [
+                        'id' => 6,
                         'tier_name' => 'Tier 1',
                         'contribution_amount' => 45,
                         'payback_amount' => 135,
@@ -125,8 +138,9 @@ class ClubMatrixSeeder extends Seeder
                         'matrix_amount' => 45,
                         'bonus_amount' => 0,
                         'recruitment_amount' => 0,
-                    ),
-                    array(
+                    ],
+                    [
+                        'id' => 7,
                         'tier_name' => 'Tier 2',
                         'contribution_amount' => 75,
                         'payback_amount' => 675,
@@ -141,8 +155,9 @@ class ClubMatrixSeeder extends Seeder
                         'matrix_amount' => 75,
                         'bonus_amount' => 0,
                         'recruitment_amount' => 0,
-                    ),
-                    array(
+                    ],
+                    [
+                        'id' => 8,
                         'tier_name' => 'Tier 3',
                         'contribution_amount' => 180,
                         'payback_amount' => 4860,
@@ -157,13 +172,16 @@ class ClubMatrixSeeder extends Seeder
                         'bonus_amount' => 0,
                         'recruitment_amount' => 600,
                         'subscription_amount' => 0,
-                    ),
-                ),
-            ),
-            array(
+                    ],
+                ],
+            ],
+            [
                 'club_name' => 'club 4',
-                'tiers' => array(
-                    array(
+                'id' => 4,
+                'order_level' => 4,
+                'tiers' => [
+                    [
+                        'id' => 9,
                         'tier_name' => 'Tier 1',
                         'contribution_amount' => 135,
                         'payback_amount' => 405,
@@ -178,8 +196,9 @@ class ClubMatrixSeeder extends Seeder
                         'matrix_amount' => 135,
                         'bonus_amount' => 0,
                         'recruitment_amount' => 0,
-                    ),
-                    array(
+                    ],
+                    [
+                        'id' => 10,
                         'tier_name' => 'Tier 2',
                         'contribution_amount' => 225,
                         'payback_amount' => 2025,
@@ -194,8 +213,9 @@ class ClubMatrixSeeder extends Seeder
                         'matrix_amount' => 225,
                         'bonus_amount' => 0,
                         'recruitment_amount' => 0,
-                    ),
-                    array(
+                    ],
+                    [
+                        'id' => 11,
                         'tier_name' => 'Tier 3',
                         'contribution_amount' => 540,
                         'payback_amount' => 14580,
@@ -210,24 +230,26 @@ class ClubMatrixSeeder extends Seeder
                         'bonus_amount' => 0,
                         'recruitment_amount' => 2850,
                         'subscription_amount' => 0,
-                    ),
-                ),
-            )
-        );
-
-        // DB::table('matrix_options')->truncate();
+                    ],
+                ],
+            ],
+        ];
         foreach ($clubs as $club) {
-            $createdclub = Club::create(['club_name' => $club['club_name'], 'order_level' => 1]);
-            $clubtiers = $club['tiers'];
-            foreach ($clubtiers as $clubtier) {
 
-                if (MatrixOption::where('tier_name', $clubtier['tier_name'])->where('club', $createdclub->id)->exists()) {
-
-                } else {
-                    $clubtier['club'] = $createdclub->id;
-                    MatrixOption::create($clubtier);
-                }
+            $clubDetails = Club::updateOrCreate(
+                ['id' => $club['id']],
+                ['club_name' => $club['club_name'],'order_level'=>$club['order_level']]
+            );
+            
+            foreach ($club['tiers'] as $clubTier) {
+                $clubTier['club'] = $clubDetails->id;
+                MatrixOption::updateOrCreate(
+                    ['id' => $clubTier['id']],
+                    $clubTier
+                );
             }
+        
+
         }
     }
 }

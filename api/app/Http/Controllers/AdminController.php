@@ -16,6 +16,7 @@ use App\Models\Permission;
 use App\Models\Role;
 use App\Models\Supplier;
 use App\Models\SystemSetting;
+use App\Models\SystemUserInvite;
 use App\Models\TierEarning;
 use App\Models\User;
 use App\Models\UserIniviteOneTimeLink;
@@ -45,7 +46,7 @@ class AdminController extends Controller
         $this->subscriptionlinkservice = $subscriptionlinkservice;
         $this->contributionservice=$contributionservice;
         $this->middleware('auth:api')->except(['download','syncsponsorship']);
-        $this->middleware('Admin')->except(['getAllRoles', 'download','updateUserBonusPaymentsForSponsorship','exitUserToPhase']);
+        $this->middleware('Admin')->except(['getAllRoles', 'download','updateUserBonusPaymentsForSponsorship','exitUserToPhase','getAllContributions']);
     }
     public function updateUserBonusPaymentsForSponsorship()
     {
@@ -848,6 +849,7 @@ class AdminController extends Controller
                 // $matrixcontribution['admin_approved']="Approved";
                 $matrixcontribution['contribution_amount'] = $nexttier->contribution_amount;
                 $matrixcontribution['payment_id'] = $masterpayment->id;
+                $matrixcontribution['expected_amount_for_sponsorship'] = $nexttier->recruitment_amount;
                 $contribution = Contribution::create($matrixcontribution);
                 //auto approve Pay
                 $thismatser = MasterPayment::where("id", $masterpayment->id)->with('Bonuses')->with('CompanyPayments')->with('MatrixPayments')->first();
@@ -909,7 +911,7 @@ class AdminController extends Controller
                 // $matrixcontribution['admin_approved']="Approved";
                 $matrixcontribution['contribution_amount'] = $nexttier->contribution_amount;
                 $matrixcontribution['payment_id'] = $masterpayment->id;
-
+                $matrixcontribution['expected_amount_for_sponsorship'] = $nexttier->recruitment_amount;
                 array_push($response, [
                     'Passed to upgrade to next tier option 2' => $nexttier->id,
                     'newcontribution' => $matrixcontribution
@@ -954,14 +956,9 @@ class AdminController extends Controller
 
                 return $contribution_tier;
             } elseif ($currenttier->tier_name == 'Tier 2') {
-                $contribution_tier = MatrixOption::where('tier_name', 'Tier 3')->first();
-
-                return $contribution_tier;
-            } elseif ($currenttier->tier_name == 'Tier 3') {
-                $contribution_tier = MatrixOption::where('tier_name', 'Tier 4')->first();
-
-                return $contribution_tier;
-            }
+                
+                return null;
+            } 
         }
     }
 
@@ -1193,7 +1190,7 @@ class AdminController extends Controller
     ///subscription links
     public function getTierContributionDetails(Request $request)
     {
-        $contribution = Contribution::where('tier_id', $request->tier)->with('contributionTier')->with('user')->get();
+        $contribution = Contribution::where('tier_id', $request->tier)->with('contributionTier')->with('user')->paginate();
 
         return $contribution;
     }
@@ -1308,5 +1305,54 @@ class AdminController extends Controller
         // return "well";
         
     }
+    public function syncSponsorshipsEntriesOnContributions(Request $request){
+        $user = Auth()->user()->id;      
+        $matopts=MatrixOption::all();
+        foreach($matopts as $matopt){
+            Contribution::where("tier_id",$matopt->id)->update(['expected_amount_for_sponsorship'=>$matopt->recruitment_amount]);
+        }
+        $contributions=Contribution::where("tier_id",">",2)->where("payback_paid_total",">",210)->get();
+        return $contributions;
+                   
+    }
+    public function syncRegisteredSponsorshipsOnContributions(Request $request){
+      $inviteslist =  SystemUserInvite::
+      join("user_inivite_onetime_links","user_inivite_onetime_links.invite_token","=","system_user_invites.invite_token")
+      ->where("user_inivite_onetime_links.is_sponsorship",1)
+      ->select("system_user_invites.*","user_inivite_onetime_links.user_id as invited_by")
+      ->get();
+      
+      foreach( $inviteslist as  $invitelist){
+        $inviteecontribution=Contribution::where("tier_id",2)->where("user_id",$invitelist->invited_by)->first();
+        if($inviteecontribution){
+            SystemUserInvite::where("id",$invitelist->id)->update(['sponsoring_tier_id'=>$inviteecontribution->id]);        
+        } 
+      }
+      
+      $allsponsoredregs = SystemUserInvite::whereNotNull('sponsoring_tier_id')
+      ->select(DB::raw('COUNT(id) as number'),DB::raw('COUNT(id)*50 as total_used'),'sponsoring_tier_id')
+      ->groupBy('sponsoring_tier_id')
+      ->get();
+      foreach( $allsponsoredregs as  $allsponsoredreg){
+        $contribution = Contribution::find($allsponsoredreg->sponsoring_tier_id);
+        $new_current_available_amount = $contribution->sponsorship_total_used - $allsponsoredreg->total_used;
+        $contribution->update([
+            'subscription_total_used' => $allsponsoredreg->total_used,
+            'current_available_amount_for_sponsorship' => $new_current_available_amount,
+        ]);
+      } 
+
+      return $allsponsoredregs;
+    }
+    public function getRegistredSponsorshipLinks(Request $request){
+    //     $allsponsoredregs = SystemUserInvite::whereNotNull('sponsoring_tier_id')
+    //   ->select(DB::raw('COUNT(id) as number'),DB::raw('COUNT(id)*50 as total_used'),'sponsoring_tier_id')
+    //   ->groupBy('sponsoring_tier_id')
+    //   ->get();  
+    $allsponsoredregs=UserIniviteOneTimeLink::where("is_sponsorship",1)->get();
+
+      return $allsponsoredregs;
+    }
+
   
 }

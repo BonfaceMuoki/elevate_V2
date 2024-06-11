@@ -68,6 +68,10 @@ const menuadmin = [
         text: "All Tiers",
         link: "/admin/tiers",
       },
+      {
+        text: "Contributions",
+        link: "/admin/all-contributions",
+      },
     ],
   },
   {

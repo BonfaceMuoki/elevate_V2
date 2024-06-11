@@ -795,6 +795,7 @@ class AdminController extends Controller
                 // $matrixcontribution['admin_approved']="Approved";
                 $matrixcontribution['contribution_amount'] = $nexttier->contribution_amount;
                 $matrixcontribution['payment_id'] = $masterpayment->id;
+                $matrixcontribution['expected_amount_for_sponsorship'] = $nexttier->recruitment_amount;
                 $contribution = Contribution::create($matrixcontribution);
                 //auto approve Pay
                 $thismatser = MasterPayment::where("id", $masterpayment->id)->with('Bonuses')->with('CompanyPayments')->with('MatrixPayments')->first();
@@ -854,6 +855,7 @@ class AdminController extends Controller
                 // $matrixcontribution['admin_approved']="Approved";
                 $matrixcontribution['contribution_amount'] = $nexttier->contribution_amount;
                 $matrixcontribution['payment_id'] = $masterpayment->id;
+                $matrixcontribution['expected_amount_for_sponsorship'] = $nexttier->recruitment_amount;
                 $contribution = Contribution::create($matrixcontribution);
                 //auto approve Pay
                 $thismatser = MasterPayment::where("id", $masterpayment->id)->with('Bonuses')->with('CompanyPayments')->with('MatrixPayments')->first();

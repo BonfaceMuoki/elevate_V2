@@ -32,10 +32,12 @@ import SetNewPassord from "./auth/SetNewPassword";
 // import PaymentsList from "./pages/user/PaymentsList";
 import ComingSoonPage from "./pages/CominSoon";
 import ProductDetails from "./pages/user/ProductDetails";
+
 import ProductsList from "./pages/user/ProductsList";
 import ShoppingCart from "./pages/user/ShoppingCart";
 import MyOrders from "./pages/user/MyOrders";
 import AdminOrders from "./pages/user/AdminOrders";
+import Contributions from "./pages/user/Contributions";
 
 const App = () => {
   return (
@@ -77,6 +79,7 @@ const App = () => {
                   <Route path="/admin/company-payments-list" element={<AdminCompanyPayments />}></Route>
 
                   <Route path="/admin/orders" element={<AdminOrders />}></Route>
+                  <Route path="/admin/all-contributions" element={<Contributions />}></Route>
                 </Route>
                 <Route element={<AuthorizeRoute checkrole="Contributor" />}>
                   <Route path="/user-profile" element={<UserProfile />}></Route>

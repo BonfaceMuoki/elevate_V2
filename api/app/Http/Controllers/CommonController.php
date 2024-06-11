@@ -102,9 +102,7 @@ class CommonController extends Controller
                 ], 200);
             }
         } else if ($request->action == "update") {
-
         }
-
     }
     public function getAllUserSubLinks(Request $request)
     {
@@ -119,12 +117,10 @@ class CommonController extends Controller
         // return $subscriptiondetails->subscriplink_link_id;
         $contribution = Contribution::where("tier_id", $subscriptiondetails->subscription_tier_level)->where("user_id", $subscriptiondetails->user_id)->first();
         //  return $contribution;
-        $paybacks = ContributionPayback::
-            join("contributions", "contributions.id", "=", "contribution_paybacks.contribution_id_paying_payback")
+        $paybacks = ContributionPayback::join("contributions", "contributions.id", "=", "contribution_paybacks.contribution_id_paying_payback")
             ->join("users", "users.id", "=", "contributions.user_id")
             ->where("contribution_id_reciving_payback", $contribution->id)->select("*")->get();
         return response()->json(['contribution' => $contribution, 'paybacks' => $paybacks], 200);
-
     }
     public function checkPayBacksBasedOnContribution(Request $request)
     {
@@ -134,12 +130,10 @@ class CommonController extends Controller
         // return $subscriptiondetails->subscriplink_link_id;
         $contribution = Contribution::where("tier_id", $subscriptiondetails->subscription_tier_level)->where("user_id", $subscriptiondetails->user_id)->first();
         //  return $contribution;
-        $paybacks = ContributionPayback::
-            join("contributions", "contributions.id", "=", "contribution_paybacks.contribution_id_paying_payback")
+        $paybacks = ContributionPayback::join("contributions", "contributions.id", "=", "contribution_paybacks.contribution_id_paying_payback")
             ->join("users", "users.id", "=", "contributions.user_id")
             ->where("contribution_id_reciving_payback", $contribution->id)->select("*")->get();
         return response()->json(['contribution' => $contribution, 'paybacks' => $paybacks], 200);
-
     }
     public function updatePersonalInformation(Request $request)
     {
@@ -159,7 +153,6 @@ class CommonController extends Controller
                 } else {
                     $checkifaUserhasthesedetails = ContributorAccount::whereIn("user_id", [$request->user])->where("payment_method", $request->payment_methodmethod)->whereIn("wallet_id", [$request->wallet])->count();
                     if ($checkifaUserhasthesedetails > 0) {
-
                     } else {
                         if ($request->sys == 0) {
                             $found = ContributorAccount::first();
@@ -168,7 +161,7 @@ class CommonController extends Controller
                             $saveobject['bank_name'] = $request->bank_name;
                             $saveobject['bank_branch_name'] = $request->bank_branch_name;
                             $saveobject['bank_account_number'] = $request->bank_account_number;
-                            $saveobject['bank_account_holder'] = $request->bank_account_holder;                            
+                            $saveobject['bank_account_holder'] = $request->bank_account_holder;
                             $saveobject['user_id'] = $request->user;
                             if ($found == null) {
                                 $record = ContributorAccount::create($saveobject);
@@ -177,9 +170,7 @@ class CommonController extends Controller
                                 $toupdate->update($saveobject);
 
                                 $record = ContributorAccount::first();
-
                             }
-
                         } else if ($request->sys == 1) {
                             $found = SystemPaymentDetail::first();
                             $saveobject['payment_method'] = $request->payment_method;
@@ -187,17 +178,13 @@ class CommonController extends Controller
                             $saveobject['status'] = 1;
                             if ($found == null) {
                                 $record = SystemPaymentDetail::create($saveobject);
-
                             } else {
                                 $toupdate = SystemPaymentDetail::findOrFail($found->id);
                                 $toupdate->update($saveobject);
                                 $record = SystemPaymentDetail::first();
                             }
-
                         }
-
                     }
-
                 }
 
                 DB::commit();
@@ -206,9 +193,7 @@ class CommonController extends Controller
 
                 return response()->json(['data' => [], 'message' => 'Failed.' . $exp->getMessage(), 'success' => true], 200);
                 DB::rollback();
-
             }
-
         }
     }
     public function saveCart(Request $request)
@@ -252,9 +237,7 @@ class CommonController extends Controller
 
             return response()->json(['data' => [], 'message' => 'Failed.' . $exp->getMessage(), 'success' => true], 200);
             DB::rollback();
-
         }
-
     }
     public function getOrders(Request $request)
     {
@@ -262,32 +245,40 @@ class CommonController extends Controller
         $ords = $orders->paginate($request->no_records);
         return response()->json($ords);
     }
-    public function getRefreshSponsoredLink(Request $request){
-                     $user=Auth()->user()->id;
-                     $found= Contribution::where("user_id", $user)
-                     ->where("tier_id", 2)
-                     ->whereRaw('(payback_paid_total - (150 + sponsorship_total_used + 60)) >= 50')
-                     ->select("*", DB::raw("(payback_paid_total - (150 + sponsorship_total_used + 60)) >= 50 as foundrecord"))
-                     ->first();
-                     if($found==null){
-                        return ['status'=>0,'token'=>''];
-                     }else{
-                        $invite = UserIniviteOneTimeLink::where("user_id", $user)->where("is_sponsorship",1)->first();
-                        return ['status'=>1,'token'=>$invite->invite_token,'user'=>$user,'foundrecord'=>$found];                       
-                     }
-    }
-    public function getRefreshNormalInviteLink(){
-        $user=Auth()->user()->id;
-        $found= Contribution::where("user_id", $user)
-        ->where("tier_id", 1)
-        ->where("admin_approved", "Approved")              
-        ->select("*")
-        ->first();
-        if($found==null){
-           return ['status'=>0,'token'=>''];
-        }else{
-           $invite = UserIniviteOneTimeLink::where("user_id", $user)->where("is_sponsorship",0)->first();
-           return ['status'=>1,'token'=>$invite->invite_token,'user'=>$user,'foundrecord'=>$found];                       
+    public function getRefreshSponsoredLink(Request $request)
+    {
+        $user = Auth()->user()->id;
+        $found = Contribution::where("user_id", $user)
+            ->where("tier_id", 2)
+            ->whereRaw('(payback_paid_total - (150 + sponsorship_total_used + 60)) >= 50')
+            ->select("*", DB::raw("(payback_paid_total - (150 + sponsorship_total_used + 60)) >= 50 as foundrecord"))
+            ->first();
+        
+        if ($found == null) {
+            return ['status' => 0, 'token' => ''];
+        } else {
+            $invite = UserIniviteOneTimeLink::where("user_id", $user)->where("is_sponsorship", 1)->first();
+            return ['status' => 1, 'token' => $invite->invite_token, 'user' => $user, 'foundrecord' => $found];
         }
+        
+    }
+    public function getRefreshNormalInviteLink()
+    {
+        $user = Auth()->user()->id;
+        $found = Contribution::where("user_id", $user)
+            ->where("tier_id", 1)
+            ->where("admin_approved", "Approved")
+            ->select("*")
+            ->first();
+        if ($found == null) {
+            return ['status' => 0, 'token' => ''];
+        } else {
+            $invite = UserIniviteOneTimeLink::where("user_id", $user)->where("is_sponsorship", 0)->first();
+            return ['status' => 1, 'token' => $invite->invite_token, 'user' => $user, 'foundrecord' => $found];
+        }
+    }
+    public function getAllContributions(Request $request){
+        $contributions=Contribution::orderBy("expected_amount_for_sponsorship","DESC")->paginate(10);
+        return $contributions;
     }
 }

@@ -128,6 +128,20 @@ export const CommonEnpointsApi = apiSlice.injectEndpoints({
         };
       },
     }),
+    getContributions: builder.query({
+      query: ({ as, currentPage, rowsPerPage, searchText, orderColumn, sortOrder }) => {
+        return {
+          url: `/api/commons/get-all-contributions?as=${as}&page=${currentPage}&no_records=${rowsPerPage}&search=${searchText}&orderby=${orderColumn}&sortOrder=${sortOrder}`,
+          method: "GET",
+          headers: {
+            Accept: "Application/json",
+          },
+          skipCache: true,
+          keepUnusedDataFor: 5,
+          refetchOnFocus: true,
+        };
+      },
+    }),
   }),
 });
 
@@ -147,4 +161,5 @@ export const {
   useGetAllCategoriesQuery,
   useCheckoutFromCartMutation,
   useGetOrdersQuery,
+  useGetContributionsQuery,
 } = CommonEnpointsApi;

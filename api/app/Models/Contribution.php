@@ -19,8 +19,10 @@ class Contribution extends Model
         'status',
         'contribution_amount',
         'payment_id',
-        'sponsorship_total_used',
-        'subscription_total_used'
+        'subscription_total_used',
+        'expected_amount_for_sponsorship',
+        'current_available_amount_for_sponsorship',
+        'sponsorship_total_used'
     ];
     // protected $append=['pay_back_entry'];
     protected $appends = [
@@ -44,18 +46,20 @@ class Contribution extends Model
             ->select("contributions.*","contribution_paybacks.*","users.full_name")->get();        
         return $paybacks;
     }
-    public function getSponsoredRegistrationsAttribute(){
-       $connections =  DB::table("contributions")
-       ->join("system_user_invites","system_user_invites.invited_by","=","contributions.user_id")
-       ->join("user_inivite_onetime_links","user_inivite_onetime_links.invite_token","=","system_user_invites.invite_token")
-       ->join("users","users.id","=","system_user_invites.completed_user_id")
-       ->where("contributions.tier_id",2) 
-       ->where("user_inivite_onetime_links.is_sponsorship",1);
-       if($this->user){
-        $connections->where("system_user_invites.invited_by",$this->user->id);
-       }       
-       $connections->get();
-       return $connections;
-
+    public function getSponsoredRegistrationsAttribute() {
+        $connections = DB::table("contributions")
+            ->join("system_user_invites", "system_user_invites.invited_by", "=", "contributions.user_id")
+            ->join("user_inivite_onetime_links", "user_inivite_onetime_links.invite_token", "=", "system_user_invites.invite_token")
+            ->join("users", "users.id", "=", "system_user_invites.completed_user_id")
+            ->where("contributions.tier_id", ">=",2)
+            ->where("contributions.expected_amount_for_sponsorship", ">",0)
+            ->where("user_inivite_onetime_links.is_sponsorship", 1);        
+        if ($this->user) {
+            $connections->where("system_user_invites.invited_by", $this->user->id);
+        }
+        
+        $results = $connections->select("system_user_invites.*", "users.*")->get();
+        return $results;
     }
+    
 }

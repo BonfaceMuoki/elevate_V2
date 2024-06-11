@@ -287,26 +287,39 @@ class AuthController extends Controller
                     //save invite
                     if($oinvite->is_sponsorship==1){
                         //check if inviving user has the money
-
+                        // DB::commit();
                        $resultsponsor= $this->processSponsoredRegistration($oinvite);                    
                         // return ['code'=>1,'sponsorrecord'=>$resultsponsor,'Invite_details'=>$oinvite];
+                        // return response()->json([
+                        //     'message' => 'Account has not been created successfully. This user cannot sponsor anyone currently.Please try again later .',
+                        //     'sponsorrecord'=>$resultsponsor,'Invite_details'=>$oinvite
+                        // ], 400);
                         //check if inviting user has the money                        
                         $user->is_sponsored=1;
                         $user->sponsorship_fee_paid=0;
                         if($resultsponsor!=null){
                           $user->save();
                           $created_user=$user;
-                          $response_investsponsored=$this->contributionservice->investForSponsored( $created_user,$oinvite);
+                          $response_investsponsored=$this->contributionservice->investForSponsored( $created_user,$oinvite,$resultsponsor);
                         }else{
-                          $usercontribution = Contribution::where("user_id",$oinvite->user_id)->where("tier_id",2)->first();
+
+                            $usercontribution = Contribution::where("user_id",$oinvite->user_id)->where("tier_id",2)->first();
                             if($usercontribution!=null){
-                                if($usercontribution->sponsorship_total_used < 600){
+                               
+                                if($usercontribution->sponsorship_total_used < $usercontribution->expected_amount_for_sponsorship){
+
                                     return response()->json([
                                         'message' => 'Account has not been created successfully. This user cannot sponsor anyone currently.Please try again later .',
+                                        'current'=>$usercontribution,
+                                        'checkwq'=>$resultsponsor
                                     ], 400);
-                                  }else if($usercontribution->sponsorship_total_used === 600){
+
+                                  }else if($usercontribution->sponsorship_total_used === $usercontribution->expected_amount_for_sponsorship){
+
                                     return response()->json([
                                         'message' => 'Account has not been created successfully. This user cannot sponsor more people .',
+                                        'current'=>$usercontribution,
+                                        'checkwq'=>$resultsponsor
                                     ], 400);
                                   } 
                             }else{
@@ -645,6 +658,7 @@ class AuthController extends Controller
                 $matrixcontribution['payback_paid_total'] = 0;
                 $matrixcontribution['contribution_amount'] = ($request->amount) - 20;
                 $matrixcontribution['payment_id'] = $masterpayment->id;
+                $matrixcontribution['expected_amount_for_sponsorship'] = $tier1->recruitment_amount;
                 $contribution = Contribution::create($matrixcontribution);
                 //send to matrix
                 //send to bonus
@@ -691,17 +705,21 @@ class AuthController extends Controller
         }
     }
     public function processSponsoredRegistration($invitedetails){
-       $whoinvited=$invitedetails->user_id;
-       $eligible=  Contribution::where("user_id",$whoinvited)->where("tier_id",2)
-      //->lockForUpdate()
-       ->whereRaw('((payback_paid_total - (150+sponsorship_total_used+60))) <> 0')->first();
-       if($eligible!=null){
-           return $eligible;
-       }else{
-           return $eligible;   
-        }
-
+        $whoinvited = $invitedetails->user_id;
+    
+        $eligible = Contribution::join("matrix_options", "matrix_options.id", "=", "contributions.tier_id")
+            ->where("user_id", $whoinvited)
+            ->where("tier_id", ">=", 2)
+            //->lockForUpdate() // Uncomment if you plan to update the row after this check
+            ->where("expected_amount_for_sponsorship", ">", 0)
+            ->whereRaw('expected_amount_for_sponsorship > sponsorship_total_used')
+            ->whereRaw('(payback_paid_total - (min_payback_to_sponsor + sponsorship_total_used)) <> 0')
+            ->select("contributions.*")
+            ->first();
+    
+        return $eligible;
     }
+    
 
 
 }
