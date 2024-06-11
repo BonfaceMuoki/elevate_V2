@@ -59,7 +59,7 @@ import {
   useSendProductUpdateMutation,
   useGetSupplierProductsQuery,
   useGetSupplierOrderedProductsQuery,
-  useDeleteProductMutation
+  useDeleteProductMutation,
 } from "../../api/admin/adminActionsApi";
 import { Link, useNavigate } from "react-router-dom";
 import { selectActiveSupplierDetails, setActiveProductGlobal } from "../../featuers/authSlice";
@@ -125,7 +125,6 @@ function SupplierDetails() {
     }
   };
 
-
   //pagination section
   const [searchText, setSearchText] = useState("");
   const [currentItems, setCurrentItems] = useState([]);
@@ -144,18 +143,27 @@ function SupplierDetails() {
       setSupplierID(supplier?.id);
       setOd_supplierID(supplier?.id);
     }
-  }, [])
+  }, []);
   // supplierID, as, currentPage, rowsPerPage, searchText, orderColumn, sortOrder, filterCategory
-  const { data: supplierproducts,
+  const {
+    data: supplierproducts,
     isLoading: loadingproducts,
-    refetch: refetchSupplierProducts } = useGetSupplierProductsQuery({ supplierID, as, currentPage, rowsPerPage, searchText, orderColumn, sortOrder, filterCategory });
-
+    refetch: refetchSupplierProducts,
+  } = useGetSupplierProductsQuery({
+    supplierID,
+    as,
+    currentPage,
+    rowsPerPage,
+    searchText,
+    orderColumn,
+    sortOrder,
+    filterCategory,
+  });
 
   useEffect(() => {
     if (supplierproducts != null) {
       setTotalRecords(supplierproducts?.meta?.total);
       setTableData(supplierproducts?.data);
-
     } else {
       setTableData([{}]);
     }
@@ -169,24 +177,21 @@ function SupplierDetails() {
 
   const paginate = (pageNumber) => {
     setCurrentPage(pageNumber);
-  }
+  };
   const orderBy = (column) => {
     setOrderColumn(column);
-    setSortOrder((sortOrder === "DESC") ? "ASC" : "DESC");
-    refetchPermissions();
-  }
+    setSortOrder(sortOrder === "DESC" ? "ASC" : "DESC");
+    refetchSupplierProducts();
+  };
   //pagination section
 
   // const currentItems = ;
   const frontendbaseurl = process.env.REACT_APP_FRONT_BASE_URL;
   // Change Page
 
-
-
-  const activateDeactivate = async (supplier, action) => { };
-  const sendMail = () => { };
-  const viewSupplierProfile = () => {
-  };
+  const activateDeactivate = async (supplier, action) => {};
+  const sendMail = () => {};
+  const viewSupplierProfile = () => {};
   const [modalProductdetails, setModalProductdetails] = useState();
   const [modalAddProduct, setModalAddProduct] = useState();
   const toggleproductdetailsmodal = () => setModalProductdetails(!modalProductdetails);
@@ -215,8 +220,7 @@ function SupplierDetails() {
     }
 
     setModalSeeProductImaages(true);
-
-  }
+  };
   const sliderSettings = {
     className: "slider-init row",
     slidesToShow: 3,
@@ -284,22 +288,20 @@ function SupplierDetails() {
     quantity_cap: yup.string().required(" Provide alert level"),
     productImages: yup
       .mixed()
-      .required('Please upload a file')
+      .required("Please upload a file")
       .nullable()
-      .test('fileSize', 'File size is too large', (value) => {
+      .test("fileSize", "File size is too large", (value) => {
         if (value[0]) {
           return value[0].size <= 1024 * 1024 * 2;
         }
         return true;
-
       })
-      .test('fileType', 'Only jpg,jpep and png files are allowed', (value) => {
+      .test("fileType", "Only jpg,jpep and png files are allowed", (value) => {
         if (value[0]) {
-          return ['image/jpg', 'jpg', 'image/jpeg', 'jpeg', 'image/png', 'png',].includes(value[0].type);
+          return ["image/jpg", "jpg", "image/jpeg", "jpeg", "image/png", "png"].includes(value[0].type);
         }
         return true;
-
-      })
+      }),
   });
 
   const {
@@ -330,7 +332,7 @@ function SupplierDetails() {
 
     if (uploadedfiles) {
       for (let i = 0; i < uploadedfiles.length; i++) {
-        formData.append('product_images[]', uploadedfiles[i]);
+        formData.append("product_images[]", uploadedfiles[i]);
       }
     }
     // data.productImages.forEach((file) => {
@@ -349,7 +351,6 @@ function SupplierDetails() {
     }
 
     if ("error" in result) {
-
       toastMessage(result.error.data.message.join("\n"), "error");
       if ("backendvalerrors" in result.error.data) {
       }
@@ -365,14 +366,12 @@ function SupplierDetails() {
   const [editingProduct, setEditingngProduct] = useState(false);
   const [activeProduct, setActiveProduct] = useState(null);
   const showAddModal = (product) => {
-
     resetAddProductForm();
     setActiveProduct(null);
     setEditingngProduct(false);
     setModalAddProduct(true);
   };
   const showUpdateModal = (product) => {
-
     setActiveProduct(product);
     setProductValue("product_name", product.product_name);
     setProductValue("category", product.category.category_name);
@@ -410,10 +409,8 @@ function SupplierDetails() {
       } else {
         toastMessage("Product deletion canceled", "success");
       }
-
     });
-
-  }
+  };
   const [deleteSupplierProduct, { errors: errosDEleting }] = useDeleteProductMutation();
   const handleDeleteProduct = async (product) => {
     const formdata = new FormData();
@@ -427,12 +424,11 @@ function SupplierDetails() {
       toastMessage(result.data.message, "success");
       refetchSupplierProducts();
     }
-
-  }
+  };
   const showProductDetails = (product) => {
     dispatch(setActiveProductGlobal(product));
     navigate("/product-details");
-  }
+  };
 
   const [activeTab, setActiveTab] = useState("products");
   //fetching supplier ordered products
@@ -446,14 +442,24 @@ function SupplierDetails() {
 
   const [od_orderColumn, setOd_orderColumn] = useState("product_name");
   const [od_filterCategory, setOd_filterCategory] = useState("");
-  const { data: supplierorderedproducts,
+  const {
+    data: supplierorderedproducts,
     isLoading: loadinsupplierorderedgproducts,
-    refetch: refetchSupplierOrderedProducts } = useGetSupplierOrderedProductsQuery({ od_supplierID, as, od_currentPage, od_rowsPerPage, od_searchText, od_orderColumn, od_sortOrder, od_filterCategory });
+    refetch: refetchSupplierOrderedProducts,
+  } = useGetSupplierOrderedProductsQuery({
+    od_supplierID,
+    as,
+    od_currentPage,
+    od_rowsPerPage,
+    od_searchText,
+    od_orderColumn,
+    od_sortOrder,
+    od_filterCategory,
+  });
   useEffect(() => {
     if (supplierproducts != null) {
       setOd_totalRecords(supplierorderedproducts?.total);
       setOd_tableData(supplierorderedproducts?.data);
-
     } else {
       setOd_tableData([{}]);
     }
@@ -467,7 +473,7 @@ function SupplierDetails() {
 
   const odpaginate = (pageNumber) => {
     setOd_currentPage(pageNumber);
-  }
+  };
   //fetching supplier ordered products
   return (
     <>
@@ -486,9 +492,7 @@ function SupplierDetails() {
         <ModalBody>
           {/* //product details */}
           <Block>
-            <Card className="card-bordered">
-
-            </Card>
+            <Card className="card-bordered"></Card>
           </Block>
           {/* //product details */}
         </ModalBody>
@@ -577,7 +581,6 @@ function SupplierDetails() {
                   </div>
                 </div>
               </Col>
-
             </Row>
             <Row className="g-gs">
               <Col md="4">
@@ -663,7 +666,13 @@ function SupplierDetails() {
                   <label className="form-label">Product Images</label>
                   <div className="form-control-wrap">
                     <div className="form-file">
-                      <input className="form-control" type="file" {...addProductForm("productImages")} multiple id="customMultipleFiles" />
+                      <input
+                        className="form-control"
+                        type="file"
+                        {...addProductForm("productImages")}
+                        multiple
+                        id="customMultipleFiles"
+                      />
                       {addProductErrrors.productImages && (
                         <span className="invalid">{addProductErrrors.productImages?.message}</span>
                       )}
@@ -671,7 +680,6 @@ function SupplierDetails() {
                   </div>
                 </div>
               </Col>
-
             </Row>
             <Row className="g-gs">
               <Col md="12">
@@ -738,37 +746,38 @@ function SupplierDetails() {
                 >
                   <div className="slider-item rounded" key={currentSlide?.id}>
                     <div>
-
-                      <img src={`${process.env.REACT_APP_API_IMAGE_BASE_URL}/${currentSlide?.image_url}`} className="w-100" alt="" />
+                      <img
+                        src={`${process.env.REACT_APP_API_IMAGE_BASE_URL}/${currentSlide?.image_url}`}
+                        className="w-100"
+                        alt=""
+                      />
                     </div>
                     {/* <img src={`${process.env.REACT_APP_API_IMAGE_BASE_URL}/${currentSlide?.image_url}`} className="w-100" alt="" /> */}
                   </div>
                 </Slider>
-                <Slider
-
-                  {...settings}
-                >
-                  {
-                    activeProduct?.product_images.map((item, key) => {
-                      return (
-                        <div
-                          className={`slider-item ${currentSlide.id === item.id ? "slick-current" : ""}`}
-                          key={item.id}
-                          onClick={() => slideChange(item?.id)}>
-                          {/* {currentSlide.id}{item?.id} */}
-                          <div className="thumb">
-                            <img src={`${process.env.REACT_APP_API_IMAGE_BASE_URL}/${item?.image_url}`} className="w-100" alt="" />
-                          </div>
+                <Slider {...settings}>
+                  {activeProduct?.product_images.map((item, key) => {
+                    return (
+                      <div
+                        className={`slider-item ${currentSlide.id === item.id ? "slick-current" : ""}`}
+                        key={item.id}
+                        onClick={() => slideChange(item?.id)}
+                      >
+                        {/* {currentSlide.id}{item?.id} */}
+                        <div className="thumb">
+                          <img
+                            src={`${process.env.REACT_APP_API_IMAGE_BASE_URL}/${item?.image_url}`}
+                            className="w-100"
+                            alt=""
+                          />
                         </div>
-                      )
-                    })
-                  }
-
+                      </div>
+                    );
+                  })}
                 </Slider>
               </div>
             </div>
           </Card>
-
         </ModalBody>
         <ModalFooter className="bg-light">
           <span className="sub-text"></span>
@@ -837,8 +846,7 @@ function SupplierDetails() {
                     </Button>
                   </li>
                 </ul>
-                {
-                  ((activeTab === "products")) &&
+                {activeTab === "products" && (
                   <div className="card-inner">
                     <Block>
                       <BlockHead>
@@ -863,7 +871,6 @@ function SupplierDetails() {
                                   className="form-control form-control-sm"
                                   placeholder="Search by name"
                                   onChange={(e) => setSearchText(e.target.value)}
-
                                 />
                               </label>
                             </div>
@@ -901,7 +908,6 @@ function SupplierDetails() {
                         <DataTable className="card-stretch">
                           <DataTableBody>
                             <DataTableHead>
-
                               <DataTableRow size="mb">
                                 <span className="sub-text">Product Name Name </span>
                               </DataTableRow>
@@ -933,27 +939,21 @@ function SupplierDetails() {
                                 }
                                 return (
                                   <DataTableItem key={index}>
-
                                     <DataTableRow size="mb">{product?.product_name}</DataTableRow>
                                     <DataTableRow size="mb">{product?.sku_name}</DataTableRow>
                                     <DataTableRow size="mb">{formatNumberAddCommas(product?.price)}</DataTableRow>
                                     <DataTableRow size="mb">
-                                      {product.status == 1 && (
-                                        <Badge color="success" >
-                                          Active
-                                        </Badge>
-                                      )}
-                                      {product.status == 0 && (
-                                        <Badge color="warning" >
-                                          Deactivated
-                                        </Badge>
-                                      )}
+                                      {product.status == 1 && <Badge color="success">Active</Badge>}
+                                      {product.status == 0 && <Badge color="warning">Deactivated</Badge>}
                                     </DataTableRow>
                                     <DataTableRow className="nk-tb-col-tools">
                                       <ul className="nk-tb-actions gx-1">
                                         <li>
                                           <UncontrolledDropdown>
-                                            <DropdownToggle tag="a" className="dropdown-toggle btn btn-icon btn-trigger">
+                                            <DropdownToggle
+                                              tag="a"
+                                              className="dropdown-toggle btn btn-icon btn-trigger"
+                                            >
                                               <Icon name="more-h"></Icon>
                                             </DropdownToggle>
                                             <DropdownMenu end>
@@ -1041,16 +1041,13 @@ function SupplierDetails() {
                       </BlockContent>
                     </Block>
                   </div>
-                }
+                )}
 
-                {
-                  ((activeTab === "ordered_products")) &&
+                {activeTab === "ordered_products" && (
                   <div className="card-inner">
                     <Block>
                       <BlockHead>
-                        <BlockHeadContent>
-
-                        </BlockHeadContent>
+                        <BlockHeadContent></BlockHeadContent>
                       </BlockHead>
                       <BlockHead size="" wide="">
                         <Row className={`justify-between g-2 with-export}`}>
@@ -1063,7 +1060,6 @@ function SupplierDetails() {
                                   className="form-control form-control-sm"
                                   placeholder="Search by name"
                                   onChange={(e) => setOd_searchText(e.target.value)}
-
                                 />
                               </label>
                             </div>
@@ -1101,7 +1097,6 @@ function SupplierDetails() {
                         <DataTable className="card-stretch">
                           <DataTableBody>
                             <DataTableHead>
-
                               <DataTableRow size="mb">
                                 <span className="sub-text">Product Name </span>
                               </DataTableRow>
@@ -1135,8 +1130,12 @@ function SupplierDetails() {
                                   <DataTableItem key={index}>
                                     <DataTableRow size="mb">{product?.product_name}</DataTableRow>
                                     <DataTableRow size="mb">{product?.sku_name}</DataTableRow>
-                                    <DataTableRow size="mb">{formatNumberAddCommas(product?.quantity_available)}</DataTableRow>
-                                    <DataTableRow size="mb">{formatNumberAddCommas(product?.total_product_cost)}</DataTableRow>
+                                    <DataTableRow size="mb">
+                                      {formatNumberAddCommas(product?.quantity_available)}
+                                    </DataTableRow>
+                                    <DataTableRow size="mb">
+                                      {formatNumberAddCommas(product?.total_product_cost)}
+                                    </DataTableRow>
                                     <DataTableRow size="mb">{formatTimestampDate(product?.created_at)}</DataTableRow>
                                   </DataTableItem>
                                 );
@@ -1160,9 +1159,7 @@ function SupplierDetails() {
                       </BlockContent>
                     </Block>
                   </div>
-                }
-
-
+                )}
               </div>
 
               <Sidebar toggleState={sideBar}>
