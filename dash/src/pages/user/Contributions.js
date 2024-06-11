@@ -116,6 +116,13 @@ const NoDataInCard = () => {
     </div>
   );
 };
+const CloseButton = () => {
+  return (
+    <span className="btn-trigger toast-close-button" role="button">
+      <Icon name="cross"></Icon>
+    </span>
+  );
+};
 const RenderCustomer = ({ row }) => {
   return (
     <div className="user-card">

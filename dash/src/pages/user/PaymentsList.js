@@ -143,7 +143,7 @@ function PaymentsList() {
   const orderBy = (column) => {
     setOrderColumn(column);
     setSortOrder(sortOrder === "DESC" ? "ASC" : "DESC");
-    refetchPermissions();
+    refetchPayments();
   };
   //pagination section
 
