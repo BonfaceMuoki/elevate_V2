@@ -155,7 +155,8 @@ class CommonController extends Controller
                     if ($checkifaUserhasthesedetails > 0) {
                     } else {
                         if ($request->sys == 0) {
-                            $found = ContributorAccount::first();
+                            $found = ContributorAccount::where("user_id",$request->user)->first();
+
                             $saveobject['payment_method'] = $request->payment_method;
                             $saveobject['wallet_id'] = $request->wallet_id;
                             $saveobject['bank_name'] = $request->bank_name;
@@ -168,8 +169,7 @@ class CommonController extends Controller
                             } else {
                                 $toupdate = ContributorAccount::findOrFail($found->id);
                                 $toupdate->update($saveobject);
-
-                                $record = ContributorAccount::first();
+                                $record = ContributorAccount::where("user_id",$request->user)->first();
                             }
                         } else if ($request->sys == 1) {
                             $found = SystemPaymentDetail::first();
