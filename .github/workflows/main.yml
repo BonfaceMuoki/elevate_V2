@@ -76,6 +76,7 @@ jobs:
           php artisan jwt:secret
           php artisan key:generate
           php artisan cache:clear
+          php artisan config:cache
 
           cd /var/www/html/dash
           
@@ -150,6 +151,7 @@ jobs:
           php artisan jwt:secret
           php artisan key:generate
           php artisan cache:clear
+          php artisan config:cache
 
           cd /var/www/html/test/dash
           
