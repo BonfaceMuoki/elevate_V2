@@ -126,9 +126,14 @@ class AdminController extends Controller
         $totalMatrix = Contribution::sum('contribution_amount');
         //company payments
         // payments
-        $totalPayments = MasterPayment::sum('amount_paid');
+        $totalPayments = MasterPayment::sum('amount_paid');      
 
         // payments
+
+        $totalIntialNonSponsoredPayments= MasterPayment::where("description","Intial payment of 50")->sum("amount_paid");
+
+        $totalIntialSponsoredPayments= MasterPayment::where("description","Intial payment of 50.Sponsored registration.")->sum("amount_paid");
+
         return response()->json([
             'message' => 'Loaded',
             'thismonthusers' => $thismonthsusers,
@@ -137,6 +142,8 @@ class AdminController extends Controller
             'totalcompanyPayments' => $totalcompanyPayments,
             'payments' => $totalMatrix,
             'totalpayments' => $totalPayments,
+            'totalIntialNonSponsoredPayments' => $totalIntialNonSponsoredPayments,
+            'totalIntialSponsoredPayments'=>$totalIntialSponsoredPayments
         ], 200);
     }
 
