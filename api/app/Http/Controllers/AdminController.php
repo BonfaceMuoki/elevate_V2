@@ -1322,6 +1322,16 @@ class AdminController extends Controller
         return $contributions;
                    
     }
+    public function pushToPhases(Request $request){
+        $user = Auth()->user()->id;      
+        $matopts=MatrixOption::all();
+        $contributions=Contribution::where("tier_id","=",2)->where("payback_paid_total","=",810)->get();
+        foreach($contributions as $contribution){
+         $this->contributionservice->registerTheNewUserForAllPhaseTiers(2,$contribution->user_id,1,100);       
+        }       
+        return $contributions;
+                   
+    }
     public function syncRegisteredSponsorshipsOnContributions(Request $request){
       $inviteslist =  SystemUserInvite::
       join("user_inivite_onetime_links","user_inivite_onetime_links.invite_token","=","system_user_invites.invite_token")
