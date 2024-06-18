@@ -134,6 +134,10 @@ Route::group([
 
     Route::post('/sync-expected-sponsorship-amounts', [AdminController::class, 'syncSponsorshipsEntriesOnContributions']);
     Route::post('/sync-registered-sponsors-to-contributions', [AdminController::class, 'syncRegisteredSponsorshipsOnContributions']);
+    Route::post('/push-to-phase-one', [AdminController::class, 'pushToPhases']);
+
+
+    
 
     
 
