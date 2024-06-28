@@ -54,7 +54,7 @@ class ClubMatrixSeeder extends Seeder
                         'elevate_company_amount' => 0,
                         'matrix_amount' => 90,
                         'bonus_amount' => 0,
-                        'recruitment_amount' => 600,
+                        'recruitment_amount' => 500,
                         'min_payback_to_sponsor'=>210
                     ],
                 ],
