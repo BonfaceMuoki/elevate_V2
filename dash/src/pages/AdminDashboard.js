@@ -338,14 +338,19 @@ const AdminDashboard = () => {
                     <div className="invest-data-history">
                       <div className="title">Non Sponsored Paid Users</div>
                       <span className="amount">
-                        {admindashboard?.thismonthusers}
+                        {admindashboard?.totalIntialNonSponsoredPaidUsers}
+                        <span className="currency currency-usd"> </span>
+                      </span>
+                      <div className="title">Sponsored Paid Users</div>
+                      <span className="amount">
+                        {admindashboard?.totalIntialSponsoredPaidUsers}
                         <span className="currency currency-usd"> </span>
                       </span>
                     </div>
                     <div className="invest-data-history">
                       <div className="title">Non Paid Users</div>
                       <span className="amount">
-                        {admindashboard?.thisweeksusers} <span className="currency currency-usd"> </span>
+                        {admindashboard?.nonpaidUsers} <span className="currency currency-usd"> </span>
                       </span>
                     </div>
                   </div>
@@ -375,14 +380,14 @@ const AdminDashboard = () => {
                 <div className="invest-data">
                   <div className="invest-data-amount g-2">
                     <div className="invest-data-history">
-                      <div className="title">Sponsored Entries </div>
+                      <div className="title">Sponsored Payments </div>
                       <span className="amount">
                         ${addCommas(admindashboard?.totalIntialSponsoredPayments)}
                         <span className="currency currency-usd"> </span>
                       </span>
                     </div>
                     <div className="invest-data-history">
-                      <div className="title">Non Sponsored Entry Payments </div>
+                      <div className="title">Non Sponsored Payments </div>
                       <span className="amount">
                         ${addCommas(admindashboard?.totalIntialNonSponsoredPayments)}{" "}
                         <span className="currency currency-usd"> </span>

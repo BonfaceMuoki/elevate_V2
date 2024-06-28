@@ -126,14 +126,14 @@ class AdminController extends Controller
         $totalMatrix = Contribution::sum('contribution_amount');
         //company payments
         // payments
-        $totalPayments = MasterPayment::sum('amount_paid');      
-
+        $totalPayments = MasterPayment::sum('amount_paid');
         // payments
-
         $totalIntialNonSponsoredPayments= MasterPayment::where("description","Intial payment of 50")->sum("amount_paid");
-
+        $totalIntialNonSponsoredPaidUsers= MasterPayment::where("description","Intial payment of 50")->count("id");
+        $totalIntialSponsoredPaidUsers = MasterPayment::where("description","Intial payment of 50.Sponsored registration.")->count("id");
         $totalIntialSponsoredPayments= MasterPayment::where("description","Intial payment of 50.Sponsored registration.")->sum("amount_paid");
-
+        $nonpaidUsers = User::whereDoesntHave('payments')->count('id');
+        $paidUsers = User::whereHas('payments')->count('users.id');
         return response()->json([
             'message' => 'Loaded',
             'thismonthusers' => $thismonthsusers,
@@ -143,7 +143,11 @@ class AdminController extends Controller
             'payments' => $totalMatrix,
             'totalpayments' => $totalPayments,
             'totalIntialNonSponsoredPayments' => $totalIntialNonSponsoredPayments,
-            'totalIntialSponsoredPayments'=>$totalIntialSponsoredPayments
+            'totalIntialSponsoredPayments'=>$totalIntialSponsoredPayments,
+            'totalIntialNonSponsoredPaidUsers'=>$totalIntialNonSponsoredPaidUsers,
+            'totalIntialSponsoredPaidUsers'=>$totalIntialSponsoredPaidUsers,
+            'nonpaidUsers'=>$nonpaidUsers,
+            'paidUsers'=>$paidUsers
         ], 200);
     }
 
