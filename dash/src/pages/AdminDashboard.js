@@ -40,7 +40,12 @@ import { toast } from "react-toastify";
 import { Badge } from "reactstrap";
 import { useSelector } from "react-redux";
 import { selectCurrentUser, selectHasInvested, setHasInvested } from "../featuers/authSlice";
-import { useGetPaymentsQuery, useVerifyPaymentMutation, useGetDashboardQuery, useDownloadPaymentOfProofQuery } from "../api/admin/adminActionsApi";
+import {
+  useGetPaymentsQuery,
+  useVerifyPaymentMutation,
+  useGetDashboardQuery,
+  useDownloadPaymentOfProofQuery,
+} from "../api/admin/adminActionsApi";
 import classnames from "classnames";
 import UserAvatar from "./user/UserAvatar";
 import Swal from "sweetalert2";
@@ -153,7 +158,6 @@ const AdminDashboard = () => {
       })
       .test("fileType", "Only PDF files are allowed", (value) => {
         if (value[0]) {
-
           return [
             "application/pdf",
             "pdf",
@@ -207,7 +211,6 @@ const AdminDashboard = () => {
   const [bonusPayments, setBonusPayments] = useState();
   const [subscriptionPayments, setSubscriptionPayments] = useState();
   const openPaymentDetails = (payment) => {
-
     setActivePayment(payment);
     setCompanyPayments(payment.company_payments);
     setBonusPayments(payment.bonuses);
@@ -218,7 +221,7 @@ const AdminDashboard = () => {
   //cloase payment distribution
   const [modalViewPDistribution, setModalViewPDistribution] = useState();
 
-  const rejectPayment = (payment) => { };
+  const rejectPayment = (payment) => {};
   const [submitPaymentVerification, { isLoading: isSendingPaymentVerification }] = useVerifyPaymentMutation();
   const verifyPayment = async (payment) => {
     Swal.fire({
@@ -245,16 +248,28 @@ const AdminDashboard = () => {
       const result = await submitPaymentVerification(formdata);
       if ("error" in result) {
         toastMessage(result.error.data.message, "error");
-
       } else {
         toggleInvestmentForm();
         toastMessage(result.data.message, "success");
         refetchPayments();
         // resetInvestmenrForm();
       }
+    };
+  };
+  const addCommas = (newvalue) => {
+    if (newvalue != null) {
+      return newvalue.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    } else {
+      return "0.00";
+    }
+  };
 
-
-
+  const getTotalEntryPayments = () => {
+    if (admindashboard?.totalIntialNonSponsoredPayments && admindashboard?.totalIntialSponsoredPayments) {
+      return (
+        parseInt(admindashboard?.totalIntialNonSponsoredPayments) +
+        parseInt(admindashboard?.totalIntialSponsoredPayments)
+      );
     }
   };
   // const downloadProof = (payment) => {
@@ -298,11 +313,11 @@ const AdminDashboard = () => {
 
         <Block>
           <Row className="g-gs">
-            <Col md="6">
+            <Col md="4">
               <PreviewAltCard className="card-full">
                 <div className="card-title-group align-start mb-0">
                   <div className="card-title">
-                    <h6 className="subtitle">Registered Users</h6>
+                    <h6 className="subtitle">TOTAL REGISTERED USERS</h6>
                   </div>
                   <div className="card-tools">
                     <TooltipComponent
@@ -321,30 +336,73 @@ const AdminDashboard = () => {
                 <div className="invest-data">
                   <div className="invest-data-amount g-2">
                     <div className="invest-data-history">
-                      <div className="title">This Month</div>
+                      <div className="title">Non Sponsored Paid Users</div>
                       <span className="amount">
-                        {admindashboard?.thismonthusers}<span className="currency currency-usd"> </span>
+                        {admindashboard?.totalIntialNonSponsoredPaidUsers}
+                        <span className="currency currency-usd"> </span>
+                      </span>
+                      <div className="title">Sponsored Paid Users</div>
+                      <span className="amount">
+                        {admindashboard?.totalIntialSponsoredPaidUsers}
+                        <span className="currency currency-usd"> </span>
                       </span>
                     </div>
                     <div className="invest-data-history">
-                      <div className="title">This Week</div>
+                      <div className="title">Non Paid Users</div>
                       <span className="amount">
-                        {admindashboard?.thisweeksusers} <span className="currency currency-usd"> </span>
+                        {admindashboard?.nonpaidUsers} <span className="currency currency-usd"> </span>
                       </span>
                     </div>
                   </div>
-                  <div className="invest-data-ck">
-                    <DepositBarChart />
+                </div>
+              </PreviewAltCard>
+            </Col>
+            <Col md="4">
+              <PreviewAltCard className="card-full">
+                <div className="card-title-group align-start mb-0">
+                  <div className="card-title">
+                    <h6 className="subtitle">TOTAL ENTRY PAYMENTS</h6>
+                  </div>
+                  <div className="card-tools">
+                    <TooltipComponent
+                      iconClass="card-hint"
+                      icon="help-fill"
+                      direction="left"
+                      id="invest-deposit"
+                      text="Total Deposited"
+                    ></TooltipComponent>
+                  </div>
+                </div>
+                <div className="card-amount">
+                  <span className="amount"> ${addCommas(getTotalEntryPayments())}</span>
+                  <span className="change up text-success">{/* <Icon name="arrow-long-up"></Icon>1.93% */}</span>
+                </div>
+                <div className="invest-data">
+                  <div className="invest-data-amount g-2">
+                    <div className="invest-data-history">
+                      <div className="title">Sponsored Payments </div>
+                      <span className="amount">
+                        ${addCommas(admindashboard?.totalIntialSponsoredPayments)}
+                        <span className="currency currency-usd"> </span>
+                      </span>
+                    </div>
+                    <div className="invest-data-history">
+                      <div className="title">Non Sponsored Payments </div>
+                      <span className="amount">
+                        ${addCommas(admindashboard?.totalIntialNonSponsoredPayments)}{" "}
+                        <span className="currency currency-usd"> </span>
+                      </span>
+                    </div>
                   </div>
                 </div>
               </PreviewAltCard>
             </Col>
 
-            <Col md="6">
+            <Col md="4">
               <PreviewAltCard className="card-full">
                 <div className="card-title-group align-start mb-0">
                   <div className="card-title">
-                    <h6 className="subtitle">Payments</h6>
+                    <h6 className="subtitle">REVOLVING PAYMENTS</h6>
                   </div>
                   <div className="card-tools">
                     <TooltipComponent
@@ -358,7 +416,8 @@ const AdminDashboard = () => {
                 </div>
                 <div className="card-amount">
                   <span className="amount">
-                    ${admindashboard?.totalpayments}<span className="currency currency-usd"></span>
+                    ${addCommas(admindashboard?.totalpayments)}
+                    <span className="currency currency-usd"></span>
                   </span>
                   <span className="change down text-danger">{/* <Icon name="arrow-long-down"></Icon>1.93% */}</span>
                 </div>
@@ -367,18 +426,22 @@ const AdminDashboard = () => {
                     <div className="invest-data-history">
                       <div className="title">Company Payments </div>
                       <div className="amount">
-                        ${admindashboard?.totalcompanyPayments} <span className="currency currency-usd"> </span>
+                        ${addCommas(admindashboard?.totalcompanyPayments)}{" "}
+                        <span className="currency currency-usd"> </span>
                       </div>
                     </div>
                     <div className="invest-data-history">
                       <div className="title">Matrix Payments</div>
                       <div className="amount">
-                        ${admindashboard?.payments} <span className="currency currency-usd"> </span>
+                        ${addCommas(admindashboard?.payments)} <span className="currency currency-usd"> </span>
                       </div>
                     </div>
-                  </div>
-                  <div className="invest-data-ck">
-                    <WithdrawBarChart />
+                    <div className="invest-data-history">
+                      <div className="title">Bonus Payments</div>
+                      <div className="amount">
+                        ${addCommas(admindashboard?.payments)} <span className="currency currency-usd"> </span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </PreviewAltCard>

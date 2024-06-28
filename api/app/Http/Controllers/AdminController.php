@@ -127,8 +127,13 @@ class AdminController extends Controller
         //company payments
         // payments
         $totalPayments = MasterPayment::sum('amount_paid');
-
         // payments
+        $totalIntialNonSponsoredPayments= MasterPayment::where("description","Intial payment of 50")->sum("amount_paid");
+        $totalIntialNonSponsoredPaidUsers= MasterPayment::where("description","Intial payment of 50")->count("id");
+        $totalIntialSponsoredPaidUsers = MasterPayment::where("description","Intial payment of 50.Sponsored registration.")->count("id");
+        $totalIntialSponsoredPayments= MasterPayment::where("description","Intial payment of 50.Sponsored registration.")->sum("amount_paid");
+        $nonpaidUsers = User::whereDoesntHave('payments')->count('id');
+        $paidUsers = User::whereHas('payments')->count('users.id');
         return response()->json([
             'message' => 'Loaded',
             'thismonthusers' => $thismonthsusers,
@@ -137,6 +142,12 @@ class AdminController extends Controller
             'totalcompanyPayments' => $totalcompanyPayments,
             'payments' => $totalMatrix,
             'totalpayments' => $totalPayments,
+            'totalIntialNonSponsoredPayments' => $totalIntialNonSponsoredPayments,
+            'totalIntialSponsoredPayments'=>$totalIntialSponsoredPayments,
+            'totalIntialNonSponsoredPaidUsers'=>$totalIntialNonSponsoredPaidUsers,
+            'totalIntialSponsoredPaidUsers'=>$totalIntialSponsoredPaidUsers,
+            'nonpaidUsers'=>$nonpaidUsers,
+            'paidUsers'=>$paidUsers
         ], 200);
     }
 
@@ -1312,6 +1323,16 @@ class AdminController extends Controller
             Contribution::where("tier_id",$matopt->id)->update(['expected_amount_for_sponsorship'=>$matopt->recruitment_amount]);
         }
         $contributions=Contribution::where("tier_id",">",2)->where("payback_paid_total",">",210)->get();
+        return $contributions;
+                   
+    }
+    public function pushToPhases(Request $request){
+        $user = Auth()->user()->id;      
+        $matopts=MatrixOption::all();
+        $contributions=Contribution::where("tier_id","=",2)->where("payback_paid_total","=",810)->get();
+        foreach($contributions as $contribution){
+         $this->contributionservice->registerTheNewUserForAllPhaseTiers(2,$contribution->user_id,1,100);       
+        }       
         return $contributions;
                    
     }

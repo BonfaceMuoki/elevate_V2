@@ -77,13 +77,15 @@ function TierDetails() {
 
   //   const [subLinks,setSubLinks]
   const { data: sublinks, isLoading: loadingsubscriptionLinks } = useGetSubLinksQuery();
-  const { data: tierDetails, isLoading: loadingTierDetails, refetch: refetchTierDetails } = useGetTierDetailsQuery(tier.id);
+  const {
+    data: tierDetails,
+    isLoading: loadingTierDetails,
+    refetch: refetchTierDetails,
+  } = useGetTierDetailsQuery(tier.id);
 
   const [sm, updateSm] = useState(false);
   //   refetchUserSubLinks
-  useEffect(() => {
-
-  }, []);
+  useEffect(() => {}, []);
 
   const toastMessage = (message, type) => {
     if (type == "success") {
@@ -123,14 +125,13 @@ function TierDetails() {
   };
   //setup for invites
 
-
   const [currentItems, setcurrentItems] = useState([]);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [tableData, setTableData] = useState([]);
 
   useEffect(() => {
-    if (tierDetails != null) {
-      setTableData(tierDetails);
+    if (tierDetails?.data != null) {
+      setTableData(tierDetails?.data);
     } else {
       setTableData([{}]);
     }
@@ -148,9 +149,9 @@ function TierDetails() {
   }, [tableData]);
   ///close setup for invites
 
-  const activateDeactivate = async (supplier, action) => { };
-  const sendMail = () => { };
-  const viewSupplierProfile = () => { };
+  const activateDeactivate = async (supplier, action) => {};
+  const sendMail = () => {};
+  const viewSupplierProfile = () => {};
   const [modalAddRegistrationLink, setAddModalRegistrationLink] = useState();
   const toggleaddRegistrationLinkModal = () => {
     setAddModalRegistrationLink(!modalAddRegistrationLink);
@@ -199,20 +200,20 @@ function TierDetails() {
   const [selectedLinkValue, setSelectedLinkValue] = useState(null);
 
   const showUpdateRegistrationLinkModal = async (registrationlink) => {
-
     setActiveRegistrationLink(registrationlink);
-    setRegistrationLinkValue("parent_link", [{
-      id: registrationlink.subscriplink_link_id,
-      value: registrationlink.subscriplink_link_id,
-      label: registrationlink.associated_parent_link.link,
-    }]);
+    setRegistrationLinkValue("parent_link", [
+      {
+        id: registrationlink.subscriplink_link_id,
+        value: registrationlink.subscriplink_link_id,
+        label: registrationlink.associated_parent_link.link,
+      },
+    ]);
     setRegistrationLinkValue("my_registration_invite", registrationlink.link_value);
 
     // if(selectedLinkValue!=null){
     setEditingngRegistrationLink(true);
     setAddModalRegistrationLink(true);
     // }
-
   };
   // updating product org
   const [sideBar, setSidebar] = useState(false);
@@ -228,7 +229,7 @@ function TierDetails() {
   const myRef = React.createRef();
   const handleRefreshList = () => {
     refetchTierDetails();
-  }
+  };
 
   return (
     <>
@@ -266,15 +267,19 @@ function TierDetails() {
         </BlockHead>
 
         <Block>
-
           <Row className="g-gs mt-3">
             <Col md="12">
-
               <Card className="card-bordered" style={{ height: "100%" }}>
                 <CardHeader className="border-bottom">
                   <div className="card-title-group">
                     <CardTitle>
-                      <h6 className="title">Investment Tiers &nbsp;  <Button color="primary" size="sm" onClick={handleRefreshList}> Refresh </Button></h6>
+                      <h6 className="title">
+                        Investment Tiers &nbsp;{" "}
+                        <Button color="primary" size="sm" onClick={handleRefreshList}>
+                          {" "}
+                          Refresh{" "}
+                        </Button>
+                      </h6>
                     </CardTitle>
                     <div className="card-tools">
                       <a
@@ -283,10 +288,7 @@ function TierDetails() {
                         onClick={(ev) => {
                           ev.preventDefault();
                         }}
-                      >
-
-
-                      </a>
+                      ></a>
                     </div>
                   </div>
                 </CardHeader>
@@ -308,17 +310,14 @@ function TierDetails() {
                         </DataTableRow>
                       </DataTableHead>
                       {/*Head*/}
-                      {tierDetails != undefined &&
-                        tierDetails != null &&
-                        tierDetails.map((tierDetail) => {
-
+                      {tierDetails?.data != undefined &&
+                        tierDetails?.data != null &&
+                        tierDetails.data.map((tierDetail) => {
                           let user_split = tierDetail.user.full_name.split(" ");
                           let passed_for_avatar = "";
 
                           if (user_split.length == 1) {
-
                             passed_for_avatar = tierDetail.user.full_name[0];
-
                           } else if (user_split.length == 2) {
                             passed_for_avatar = user_split[0] + " " + user_split[1];
                           } else if (user_split.length > 2) {
@@ -330,21 +329,18 @@ function TierDetails() {
                               <DataTableRow>
                                 {/* <Link to={`${process.env.PUBLIC_URL}/user-details-regular/${supplier.id}`}> */}
                                 <div className="user-card">
-                                  <UserAvatar
-                                    theme="default"
-                                    text={findUpper(passed_for_avatar)}
-                                    image=""
-                                  ></UserAvatar>
+                                  <UserAvatar theme="default" text={findUpper(passed_for_avatar)} image=""></UserAvatar>
                                   <div className="user-info">
                                     <span className="tb-lead">
                                       {tierDetail.user.full_name}{" "}
                                       <span
-                                        className={`dot dot-${tierDetail.admin_Approved === "Approved"
-                                          ? "success"
-                                          : tierDetail.admin_Approved === 0
+                                        className={`dot dot-${
+                                          tierDetail.admin_Approved === "Approved"
+                                            ? "success"
+                                            : tierDetail.admin_Approved === 0
                                             ? "warning"
                                             : "danger"
-                                          } d-md-none ms-1`}
+                                        } d-md-none ms-1`}
                                       >
                                         {tierDetail.admin_Approved === "Approved" ? "Completed" : "Pending"}
                                       </span>
@@ -366,24 +362,20 @@ function TierDetails() {
                                     </tr>
                                   </thead>
                                   <tbody>
-                                    {
-                                      tierDetail.pay_back_entries.map((payback, paybackkey) => {
-                                        return (
-                                          <tr key={paybackkey}>
-                                            <td>{payback.full_name}</td>
-                                            <td>{payback.created_at}</td>
-                                            <td>
-                                              {payback.contribution_amount}
-                                            </td>
-                                            <td>
-                                              {payback.payment_status != "" && <Badge color="info">{payback.payment_status}</Badge>}
-                                            </td>
-                                          </tr>
-                                        )
-                                      })
-
-                                    }
-
+                                    {tierDetail.pay_back_entries.map((payback, paybackkey) => {
+                                      return (
+                                        <tr key={paybackkey}>
+                                          <td>{payback.full_name}</td>
+                                          <td>{payback.created_at}</td>
+                                          <td>{payback.contribution_amount}</td>
+                                          <td>
+                                            {payback.payment_status != "" && (
+                                              <Badge color="info">{payback.payment_status}</Badge>
+                                            )}
+                                          </td>
+                                        </tr>
+                                      );
+                                    })}
                                   </tbody>
                                 </table>
                               </DataTableRow>
@@ -422,8 +414,6 @@ function TierDetails() {
                 <CardFooter className="border-top"></CardFooter>
               </Card>
             </Col>
-
-
           </Row>
         </Block>
       </Content>

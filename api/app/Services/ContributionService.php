@@ -301,13 +301,11 @@ class ContributionService
                     $masterpayment = MasterPayment::create($savepayment);
                     $companypaymentob['amount_paid'] = 50;
                     $companypaymentob['paid_by'] = $contribution->user_id;
-                    $companypaymentob['paid_as'] = 'Exit from platform';
+                    $companypaymentob['paid_as'] = 'Exit from club one Tier 2.';
                     $companypaymentob['payment_id'] = $masterpayment->id;
                     $companypayment = CompanyReceivedPayment::create($companypaymentob);
 
                     $this->registerTheNewUserForAllPhaseTiers(2, $contribution->user_id, 1, 100);
-
-                
                 }
 
                 ///move earnings to earnings table
@@ -517,11 +515,10 @@ class ContributionService
         if ($currenttier->club == 1) {
             if ($currenttier->tier_name == 'Tier 1') {
                 $contribution_tier = MatrixOption::where('tier_name', 'Tier 2')->first();
-
                 return $contribution_tier;
             } elseif ($currenttier->tier_name == 'Tier 2') {
-                $contribution_tier = MatrixOption::where('tier_name', 'Tier 3')->first();
-                return $contribution_tier;
+                // $contribution_tier = MatrixOption::where('tier_name', 'Tier 3')->first();
+                return null;
             }
         }
     }
@@ -674,7 +671,7 @@ class ContributionService
 
         return $fileName;
     }
-    public function investForSponsored($user, $invitedetails,$sponsoringcontribution)
+    public function investForSponsored($user, $invitedetails, $sponsoringcontribution)
     {
 
         try {
@@ -733,13 +730,13 @@ class ContributionService
                 }
                 //send to bonus
                 //update investm*ent status
-                $sponsorshipdetails = $this->processSponsoredRegistration($invitedetails, $matrixpay,$sponsoringcontribution);
+                $sponsorshipdetails = $this->processSponsoredRegistration($invitedetails, $matrixpay, $sponsoringcontribution);
                 //update investiment status
 
             } else {
                 return response()->json([
                     'message' => 'You have already paid your membership fee.',
-                    'allmesag'=> $sponsorshipdetails
+                    'allmesag' => $sponsorshipdetails
                 ], 201);
             }
             // upload Payment Proof
@@ -759,9 +756,9 @@ class ContributionService
             ], 400);
         }
     }
-    public function processSponsoredRegistration($invitedetails, $payment,$sponsoringcontribution)
+    public function processSponsoredRegistration($invitedetails, $payment, $sponsoringcontribution)
     {
-        $whoinvited = $invitedetails->user_id;        
+        $whoinvited = $invitedetails->user_id;
         $response = null;
         $eligible =  Contribution::find($sponsoringcontribution->id);
 
@@ -770,8 +767,8 @@ class ContributionService
             $eligible->increment("sponsorship_total_used", 50);
             if ($eligible->save()) {
 
-                $response['sponsoring_contribution']= $sponsoringcontribution;
-                $response['eligible']= $eligible;                
+                $response['sponsoring_contribution'] = $sponsoringcontribution;
+                $response['eligible'] = $eligible;
                 $response['auto_approval_details'] = $this->autoVerifySponsorshipPayment($payment, 1);
             } else {
                 $response['auto_approval_details'] = [];
@@ -841,7 +838,7 @@ class ContributionService
 
                         //close Save payment
                         //
-             
+
                         // Save contribution to matrix
                         $matrixContribution = [
                             'user_id' => $user_id,
@@ -849,7 +846,8 @@ class ContributionService
                             'payback_paid_total' => 0,
                             'contribution_amount' => $matoptions->contribution_amount,
                             'payment_id' => $masterPayment->id,
-                            'expected_amount_for_sponsorship'=>$matoptions->recruitment_amount
+                            'expected_amount_for_sponsorship' => $matoptions->recruitment_amount,
+                            'admin_approved' =>"Approved"
                         ];
                         $contribution_ = Contribution::create($matrixContribution);
                         // ($tier, $notuser,$paybackcount,$paybackamount)
@@ -877,12 +875,34 @@ class ContributionService
                                 if (ContributionPayback::create($paybackEntry)) {
                                     //increament pay count on reciving side
                                     $payesscontribution = Contribution::findOrFail($user_to_pay->receiving_contribution_id);
-                                    $payesscontribution->payback_count++; // Increment the payback_count by 1
-                                    $payesscontribution->payback_paid_total += $matoptions->contribution_amount; // Increment the payback_paid_total by the contribution_amount
+                                    $payesscontribution->payback_count += 1;
+                                    $payesscontribution->payback_paid_total += $matoptions->contribution_amount;
+                                    if ($payesscontribution->payback_paid_total >= $matoptions->payback_amount) {
+                                        $payesscontribution->status = "Completed";
+                                    }
                                     $payesscontribution->save();
 
+                                    // $payesscontribution = Contribution::findOrFail($user_to_pay->receiving_contribution_id);
+
+                                    // $afterupdateamount=$payesscontribution->payback_paid_total+$matoptions->contribution_amount;
+                                    // $afterupdatecount=$payesscontribution->payback_count+1;
+                                    //   if($afterupdateamount >= $matoptions->payback_amount){
+                                    //     $payesscontribution->status="Completed";
+                                    //   }
+                                    // $payesscontribution->payback_count++; // Increment the payback_count by 1                                    
+                                    // $payesscontribution->payback_paid_total += $matoptions->contribution_amount; // Increment the payback_paid_total by the contribution_amount
+
+                                    // $payesscontribution->save();
+
                                     // return $transitioned;
-                                    //increment pay count on receiving side                                
+                                    //increment pay count on receiving side     
+                                    //update status
+                                    //  $toupstatus=Contribution::where("id",$user_to_pay->receiving_contribution_id)->first();
+                                    // if($payesscontribution->payback_paid_total == $matoptions->payback_amount ){
+                                    //     $payesscontribution->status="Completed";
+                                    //     $payesscontribution->save();
+                                    // }
+                                    //update status                           
                                 }
                             }
                         } else if ($contribution_ && $user_to_pay == null) {
@@ -1071,10 +1091,10 @@ class ContributionService
                 ->first()
                 ->total_to_pay;
         }
-       
+
         return $nextclub;
     }
-    public function syncSponsorshipsEntriesOnContributions(Request $request){
-        
+    public function syncSponsorshipsEntriesOnContributions(Request $request)
+    {
     }
 }

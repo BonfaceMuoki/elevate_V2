@@ -294,6 +294,7 @@ const TierListView = () => {
                           <th scope="col">To Receive</th>
                           <th scope="col">Reinvestment</th>
                           <th scope="col">Withdrawal</th>
+                          <th scope="col">Sponsorship</th>
                           <th scope="col">Action</th>
                         </tr>
                       </thead>
@@ -309,6 +310,7 @@ const TierListView = () => {
                                 <td>{tier.payback_amount}</td>
                                 <td>{tier.reinvestment}</td>
                                 <td>{tier.withdrawal}</td>
+                                <td>{tier.recruitment_amount}</td>
                                 <td>
                                   <ul className="nk-tb-actions gx-1">
                                     <li>

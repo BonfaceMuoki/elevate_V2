@@ -25,3 +25,7 @@ Route::group([
     Route::post('/reset-password', [AuthController::class, 'ResetPassword']);  
     Route::post('/register', [AuthController::class, 'register']);     
 });
+
+Route::get('token', function () {
+    return response()->json(['csrf_token' => csrf_token()]);
+});
